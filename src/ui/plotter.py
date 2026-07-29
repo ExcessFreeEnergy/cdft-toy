@@ -1,4 +1,4 @@
-"""Raylib 2D Plotting Engine for cDFT profiles and diagnostic curves."""
+"""Raylib 2D Plotting Engine for cDFT profiles, weighted densities, and diagnostic curves."""
 
 from typing import List, Optional, Tuple
 import numpy as np
@@ -24,7 +24,9 @@ class Plotter2D:
         self.plot_w = w - self.pad_left - self.pad_right
         self.plot_h = h - self.pad_top - self.pad_bottom
 
-    def map_to_screen(self, z: float, y_val: float, z_min: float, z_max: float, y_min: float, y_max: float) -> Tuple[float, float]:
+    def map_to_screen(
+        self, z: float, y_val: float, z_min: float, z_max: float, y_min: float, y_max: float
+    ) -> Tuple[float, float]:
         """Transform physical coordinates (z, y_val) to screen pixel coordinates (px, py)."""
         z_span = z_max - z_min if z_max > z_min else 1.0
         y_span = y_max - y_min if y_max > y_min else 1.0
@@ -43,10 +45,11 @@ class Plotter2D:
         y_max: float = 3.0,
         x_label: str = "z / sigma",
         y_label: str = "rho(z)",
+        primary_label: str = "rho(z)",
         secondary_curves: Optional[List[Tuple[np.ndarray, pr.Color, str]]] = None,
         benchmark_points: Optional[Tuple[np.ndarray, np.ndarray]] = None,
     ) -> None:
-        """Render axes, gridlines, curve, secondary curves, benchmark points, and hover tooltip."""
+        """Render axes, gridlines, curve, secondary curves, benchmark points, legend, and hover tooltip."""
         # 1. Background and border
         pr.draw_rectangle_rec(self.rect, Theme.PANEL_BG)
         pr.draw_rectangle_lines_ex(self.rect, 1.0, Theme.PANEL_BORDER)
@@ -85,18 +88,16 @@ class Plotter2D:
         pr.draw_text(x_label.encode("utf-8"), int(self.plot_x + self.plot_w / 2 - 25), int(self.plot_y + self.plot_h + 22), 12, Theme.TEXT_PRIMARY)
         pr.draw_text(y_label.encode("utf-8"), int(self.rect.x + 8), int(self.plot_y + 10), 12, Theme.PRIMARY_BLUE)
 
-        # 5. Main Density Curve
+        # 5. Main Primary Curve
         if len(z_arr) > 1 and len(y_arr) == len(z_arr):
             points: List[pr.Vector2] = []
-            step = max(1, len(z_arr) // 800)  # Downsample for smooth Raylib rendering if very large
+            step = max(1, len(z_arr) // 800)
             for k in range(0, len(z_arr), step):
                 px, py = self.map_to_screen(z_arr[k], y_arr[k], z_min, z_max, y_min, y_max)
-                # Clip to inner plot viewport
                 px = max(self.plot_x, min(self.plot_x + self.plot_w, px))
                 py = max(self.plot_y, min(self.plot_y + self.plot_h, py))
                 points.append(pr.Vector2(px, py))
 
-            # Draw lines connecting points
             for idx in range(len(points) - 1):
                 pr.draw_line_v(points[idx], points[idx + 1], Theme.CURVE_PRIMARY)
 
@@ -114,7 +115,26 @@ class Plotter2D:
                     for idx in range(len(sec_pts) - 1):
                         pr.draw_line_v(sec_pts[idx], sec_pts[idx + 1], sec_color)
 
-        # 7. Benchmark Points Overlay (if provided)
+        # 7. Legend Box
+        legend_x = self.plot_x + self.plot_w - 180
+        legend_y = self.plot_y + 10
+        legend_items = [(Theme.CURVE_PRIMARY, primary_label)]
+        if secondary_curves:
+            for _, s_color, s_name in secondary_curves:
+                legend_items.append((s_color, s_name))
+
+        if legend_items:
+            leg_h = 10 + len(legend_items) * 18
+            leg_rect = pr.Rectangle(legend_x, legend_y, 170, leg_h)
+            pr.draw_rectangle_rec(leg_rect, pr.Color(20, 25, 36, 200))
+            pr.draw_rectangle_lines_ex(leg_rect, 1.0, Theme.PANEL_BORDER)
+
+            for idx, (l_color, l_name) in enumerate(legend_items):
+                ly = legend_y + 8 + idx * 18
+                pr.draw_line(int(legend_x + 8), int(ly + 5), int(legend_x + 24), int(ly + 5), l_color)
+                pr.draw_text(l_name.encode("utf-8"), int(legend_x + 30), int(ly), 11, Theme.TEXT_PRIMARY)
+
+        # 8. Benchmark Points Overlay (if provided)
         if benchmark_points is not None:
             bm_z, bm_y = benchmark_points
             for bz, by in zip(bm_z, bm_y):
@@ -123,25 +143,22 @@ class Plotter2D:
                     pr.draw_circle(int(px), int(py), 4.0, Theme.BENCHMARK_DOT)
                     pr.draw_circle_lines(int(px), int(py), 4.0, Theme.TEXT_PRIMARY)
 
-        # 8. Interactive Hover Tooltip
+        # 9. Interactive Hover Tooltip
         mouse_pos = pr.get_mouse_position()
         if pr.check_collision_point_rec(mouse_pos, inner_rect) and len(z_arr) > 0:
             rel_x = (mouse_pos.x - self.plot_x) / self.plot_w
             hover_z = z_min + rel_x * (z_max - z_min)
 
-            # Find closest grid point
             idx = int(np.clip(np.searchsorted(z_arr, hover_z), 0, len(z_arr) - 1))
             actual_z = z_arr[idx]
             actual_y = y_arr[idx]
 
             cur_px, cur_py = self.map_to_screen(actual_z, actual_y, z_min, z_max, y_min, y_max)
 
-            # Draw vertical guide line
             pr.draw_line(int(cur_px), int(self.plot_y), int(cur_px), int(self.plot_y + self.plot_h), Theme.WARNING_AMBER)
             pr.draw_circle(int(cur_px), int(cur_py), 5.0, Theme.WARNING_AMBER)
 
-            # Render tooltip box
-            tt_str = f"z = {actual_z:.3f}, rho = {actual_y:.4f}".encode("utf-8")
+            tt_str = f"z = {actual_z:.3f}, {y_label} = {actual_y:.4f}".encode("utf-8")
             tt_w = pr.measure_text(tt_str, 12) + 12
             tt_x = min(mouse_pos.x + 10, self.plot_x + self.plot_w - tt_w)
             tt_y = max(mouse_pos.y - 25, self.plot_y + 5)

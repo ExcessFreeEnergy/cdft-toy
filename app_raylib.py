@@ -4,6 +4,7 @@ import math
 import numpy as np
 import pyray as pr
 
+from src.convolutions import FFTConvolver1D
 from src.grid import Grid1D, PhysicalParameters
 from src.ui.plotter import Plotter2D
 from src.ui.theme import Theme
@@ -23,12 +24,13 @@ class RaylibCDFTApp:
         self.dz = 0.005
         self.geom_idx = 0  # 0: Single Planar Wall, 1: Slit Pore
         self.fmt_idx = 0  # 0: RF, 1: WB, 2: WBII, 3: WB-Tensor
+        self.view_mode_idx = 0  # 0: Density Profile rho(z), 1: Weighted Densities n_alpha(z)
 
         self.is_solving = False
         self.show_benchmark = True
         self.iteration = 0
 
-        # Physical system & grid init
+        # Physical system, grid, and FFT convolver init
         self.rebuild_system()
 
         # Raylib window initialization
@@ -41,9 +43,11 @@ class RaylibCDFTApp:
         self.plotter_diag = Plotter2D(360, 535, self.width - 375, 175, title="Diagnostic Metrics & Contact Theorem")
 
     def rebuild_system(self) -> None:
-        """Reconstruct PhysicalParameters, Grid1D, and initial density profile."""
+        """Reconstruct PhysicalParameters, Grid1D, FFTConvolver1D, and initial density profile."""
         self.params = PhysicalParameters(eta=self.eta)
-        self.grid = Grid1D(params=self.params, Lz=self.Lz, dz=self.dz)
+        dz_clamped = min(0.010, max(0.001, self.dz))
+        self.grid = Grid1D(params=self.params, Lz=self.Lz, dz=dz_clamped)
+        self.convolver = FFTConvolver1D(self.grid, apply_endpoint_modification=True)
 
         w_left = 0.0
         w_right = self.Lz if self.geom_idx == 1 else None
@@ -52,6 +56,9 @@ class RaylibCDFTApp:
         self.rho = self.grid.initial_density_profile(wall_left=w_left, wall_right=w_right)
         self.rho_init = self.rho.copy()
         self.iteration = 0
+
+        # Compute initial weighted densities via FFT convolution
+        self.n_dict = self.convolver.compute_weighted_densities(self.rho)
 
     def get_benchmark_points(self):
         """Return benchmark Monte Carlo data points from Roth (2010) Fig. 1 for comparison."""
@@ -73,7 +80,7 @@ class RaylibCDFTApp:
         return None
 
     def run_solver_step(self) -> None:
-        """Execute a single solver relaxation step (toy demonstration relaxation for UI)."""
+        """Execute a single solver relaxation step and update weighted densities."""
         if not self.is_solving:
             return
 
@@ -90,6 +97,9 @@ class RaylibCDFTApp:
         target_rho = self.params.rho_bulk * osc
         alpha = min(1.0, 0.02 * self.iteration)
         self.rho[acc] = (1.0 - alpha) * self.rho[acc] + alpha * target_rho
+
+        # Recompute spatial weighted densities via FFT convolutions
+        self.n_dict = self.convolver.compute_weighted_densities(self.rho)
 
         if self.iteration >= 50:
             self.is_solving = False
@@ -118,7 +128,18 @@ class RaylibCDFTApp:
             self.dz = new_dz
             self.rebuild_system()
 
-        # 2. Geometry Selection (2 columns)
+        # 2. Viewport Mode Selection (Density vs Weighted Densities)
+        view_options = ["Density rho(z)", "Weighted n_alpha(z)"]
+        new_view, h_v = UIWidgets.radio_group(25, curr_y, 310, "Plot Viewport Mode:", view_options, self.view_mode_idx, cols=2)
+        curr_y += h_v + 8.0
+        if new_view != self.view_mode_idx:
+            self.view_mode_idx = new_view
+            if self.view_mode_idx == 0:
+                self.plotter_main.title = "Density Profile rho(z)"
+            else:
+                self.plotter_main.title = "Spatial Weighted Densities n_alpha(z) (FFT Convolutions)"
+
+        # 3. Geometry Selection (2 columns)
         geom_options = ["Single Wall (z=0)", "Slit Pore"]
         new_geom, h_g = UIWidgets.radio_group(25, curr_y, 310, "Geometry Mode:", geom_options, self.geom_idx, cols=2)
         curr_y += h_g + 8.0
@@ -126,17 +147,17 @@ class RaylibCDFTApp:
             self.geom_idx = new_geom
             self.rebuild_system()
 
-        # 3. FMT Functional Variant Selection (2 columns x 2 rows)
+        # 4. FMT Functional Variant Selection (2 columns x 2 rows)
         fmt_options = ["RF (Original)", "WB (White-Bear)", "WBII (Mark II)", "WB-Tensor"]
         new_fmt, h_f = UIWidgets.radio_group(25, curr_y, 310, "FMT Functional Variant:", fmt_options, self.fmt_idx, cols=2)
-        curr_y += h_f + 12.0
+        curr_y += h_f + 10.0
         if new_fmt != self.fmt_idx:
             self.fmt_idx = new_fmt
             self.rebuild_system()
 
-        # 4. Action Buttons
+        # 5. Action Buttons
         btn_w = 150.0
-        btn_h = 32.0
+        btn_h = 30.0
 
         solve_label = "Pause" if self.is_solving else "Solve / Relax"
         if UIWidgets.button(25, curr_y, btn_w, btn_h, solve_label, bg_color=Theme.PRIMARY_BLUE):
@@ -145,23 +166,23 @@ class RaylibCDFTApp:
         if UIWidgets.button(185, curr_y, btn_w, btn_h, "Reset Profile", bg_color=Theme.SLIDER_BG):
             self.rebuild_system()
 
-        curr_y += 40.0
+        curr_y += 36.0
 
         bm_label = "Hide Benchmark" if self.show_benchmark else "Show Benchmark"
         if UIWidgets.button(25, curr_y, 310, btn_h, bm_label, bg_color=Theme.HEADER_BG):
             self.show_benchmark = not self.show_benchmark
 
-        curr_y += 44.0
+        curr_y += 40.0
 
-        # 5. Physics Info Card
-        UIWidgets.draw_panel(25, curr_y, 310, 165, title="System Thermodynamics & Info", bg_color=Theme.BG_DARK)
-        info_y = curr_y + 35
+        # 6. Physics Info Card
+        UIWidgets.draw_panel(25, curr_y, 310, 160, title="System Thermodynamics & Info", bg_color=Theme.BG_DARK)
+        info_y = curr_y + 32
 
         info_lines = [
             f"Sphere Radius (R)  : {self.params.radius:.4f} sigma",
             f"Bulk Density (rho) : {self.params.rho_bulk:.6f}",
+            f"Grid Spacing (dz)  : {self.grid.dz:.4f} sigma",
             f"Grid Points (N)    : {self.grid.num_points}",
-            f"Solver Iteration   : {self.iteration}",
             f"Contact Density    : {self.rho[self.grid.z >= self.params.radius][0]:.4f}",
             f"Status             : {'Solving...' if self.is_solving else 'Ready / Idle'}",
         ]
@@ -194,26 +215,54 @@ class RaylibCDFTApp:
             pr.draw_rectangle_lines_ex(header_rect, 1.0, Theme.PANEL_BORDER)
             pr.draw_text("Classical Density Functional Theory (FMT) - Raylib Interactive Solver".encode("utf-8"), 15, 9, 16, Theme.TEXT_PRIMARY)
 
-            # Render UI sidebar and plot viewports
+            # Render UI sidebar
             self.render_sidebar()
 
-            y_max_plot = max(3.0, np.max(self.rho) * 1.1)
-            bm_pts = self.get_benchmark_points()
+            # Render viewports based on view_mode_idx
+            if self.view_mode_idx == 0:
+                # Density Profile View
+                y_max_plot = max(3.0, np.max(self.rho) * 1.1)
+                bm_pts = self.get_benchmark_points()
+                sec_curves = [(self.rho_init, Theme.CURVE_SECONDARY, "Initial Guess")]
 
-            # Render main density profile plot
-            sec_curves = [(self.rho_init, Theme.CURVE_SECONDARY, "Initial Guess")]
-            self.plotter_main.render(
-                z_arr=self.grid.z,
-                y_arr=self.rho,
-                z_min=0.0,
-                z_max=self.Lz,
-                y_min=0.0,
-                y_max=y_max_plot,
-                x_label="z / sigma",
-                y_label="rho(z)",
-                secondary_curves=sec_curves,
-                benchmark_points=bm_pts,
-            )
+                self.plotter_main.render(
+                    z_arr=self.grid.z,
+                    y_arr=self.rho,
+                    z_min=0.0,
+                    z_max=self.Lz,
+                    y_min=0.0,
+                    y_max=y_max_plot,
+                    x_label="z / sigma",
+                    y_label="rho(z)",
+                    primary_label="rho(z)",
+                    secondary_curves=sec_curves,
+                    benchmark_points=bm_pts,
+                )
+            else:
+                # Spatial Weighted Densities View (FFT Convolutions)
+                n3_arr = self.n_dict["n3"]
+                n2_arr = self.n_dict["n2"]
+                v2_arr = self.n_dict["v2"]
+
+                y_max_plot = max(1.0, np.max(n2_arr) * 1.1)
+                sec_curves = [
+                    (n2_arr, Theme.SUCCESS_GREEN, "n2(z) Surface Density"),
+                    (v2_arr, Theme.DANGER_RED, "v2(z) Vector Flux"),
+                ]
+
+                self.plotter_main.render(
+                    z_arr=self.grid.z,
+                    y_arr=n3_arr,
+                    z_min=0.0,
+                    z_max=self.Lz,
+                    y_min=0.0,
+                    y_max=y_max_plot,
+                    x_label="z / sigma",
+                    y_label="n_alpha(z)",
+                    primary_label="n3(z) Packing Fraction",
+                    secondary_curves=sec_curves,
+                    benchmark_points=None,
+                )
 
             # Render diagnostic plot
             self.plotter_diag.render(
@@ -225,6 +274,7 @@ class RaylibCDFTApp:
                 y_max=5.0,
                 x_label="z / sigma",
                 y_label="V_ext(z)",
+                primary_label="V_ext(z)",
             )
 
             pr.end_drawing()
