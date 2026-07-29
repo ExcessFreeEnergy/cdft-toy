@@ -4,7 +4,7 @@ import math
 import numpy as np
 import pyray as pr
 
-from src.functionals import RosenfeldFunctional
+from src.functionals import functional_factory
 from src.grid import Grid1D, PhysicalParameters
 from src.solvers import RothPicardSolver
 from src.ui.plotter import Plotter2D
@@ -26,6 +26,7 @@ class RaylibCDFTApp:
         self.dz = 0.005
         self.geom_idx = 0  # 0: Single Planar Wall, 1: Slit Pore
         self.fmt_idx = 0  # 0: RF, 1: WB, 2: WBII, 3: WB-Tensor
+        self.fmt_names = ["RF", "WB", "WBII"]  # Available functional names
         self.view_mode_idx = 0  # 0: Density Profile rho(z), 1: Weighted Densities n_alpha(z), 2: Free Energy Phi(z)
 
         self.is_solving = False
@@ -34,8 +35,9 @@ class RaylibCDFTApp:
         self.residual = 0.0
         self.alpha_used = 0.03
 
-        # Instantiate functional engine
-        self.func = RosenfeldFunctional()
+        # Instantiate functional engine from current selection
+        fmt_name = self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
+        self.func = functional_factory(fmt_name)
 
         # Physical system, grid, solver, and weighted density calculator init
         self.rebuild_system()
@@ -51,6 +53,10 @@ class RaylibCDFTApp:
 
     def rebuild_system(self) -> None:
         """Reconstruct PhysicalParameters, Grid1D, RothPicardSolver, and initial density profile."""
+        # Recreate functional from current selection
+        fmt_name = self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
+        self.func = functional_factory(fmt_name)
+
         self.params = PhysicalParameters(eta=self.eta)
         dz_clamped = min(0.010, max(0.001, self.dz))
         self.grid = Grid1D(params=self.params, Lz=self.Lz, dz=dz_clamped)
@@ -79,12 +85,11 @@ class RaylibCDFTApp:
         self.residual = 0.0
         self.alpha_used = 0.03
 
-        # Compute initial weighted densities, free energy density, c1, and PY pressure
+        # Compute initial weighted densities, free energy density, and c1
         self.wd = self.calc.compute(self.rho)
         self.n_dict = self.wd.to_dict()
         self.phi = self.func.evaluate_phi(self.wd)
         self.f_ex = self.func.compute_total_free_energy(self.grid, self.wd)
-        self.p_py = self.func.compute_bulk_pressure(self.eta, self.params.sigma)
 
         self.c1, self.c1_bulk = self.solver.compute_c1(self.rho)
 
@@ -183,7 +188,8 @@ class RaylibCDFTApp:
             elif self.view_mode_idx == 1:
                 self.plotter_main.title = "Spatial Weighted Densities n_alpha(z) (FFT Convolutions)"
             else:
-                self.plotter_main.title = "Rosenfeld Excess Free Energy Density Phi_RF(z)"
+                fmt_label = self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
+                self.plotter_main.title = f"Excess Free Energy Density Phi_{fmt_label}(z)"
 
         # 3. Geometry Selection (2 columns)
         geom_options = ["Single Wall (z=0)", "Slit Pore"]
@@ -222,7 +228,7 @@ class RaylibCDFTApp:
         curr_y += 34.0
 
         # 6. Physics Info Card & Physical Feasibility Badge
-        UIWidgets.draw_panel(25, curr_y, 310, 150, title="System Thermodynamics & Info", bg_color=Theme.BG_DARK)
+        UIWidgets.draw_panel(25, curr_y, 310, 186, title="System Thermodynamics & Info", bg_color=Theme.BG_DARK)
         info_y = curr_y + 28
 
         max_n3 = self.wd.max_n3
@@ -236,9 +242,14 @@ class RaylibCDFTApp:
             badge_color = Theme.DANGER_RED
             status_n3 = f"OVER-PACKED ({max_n3:.4f})"
 
+        fmt_label = self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
+        p_bulk = self.func.compute_bulk_pressure(self.eta, self.params.sigma)
+
         info_lines = [
+            (f"Active Functional  : {fmt_label}", Theme.PRIMARY_BLUE),
             (f"Sphere Radius (R)  : {self.params.radius:.4f} sigma", Theme.TEXT_PRIMARY),
             (f"Bulk Density (rho) : {self.params.rho_bulk:.6f}", Theme.TEXT_PRIMARY),
+            (f"Bulk Pressure (bp) : {p_bulk:.4f}", Theme.TEXT_PRIMARY),
             (f"Solver Iter (k)    : {self.iteration}", Theme.TEXT_PRIMARY),
             (f"Alpha Opt (alpha)  : {self.alpha_used:.4f}", Theme.PRIMARY_BLUE),
             (f"Residual Norm (R)  : {self.residual:.2e}", Theme.WARNING_AMBER if self.is_solving else Theme.TEXT_PRIMARY),
@@ -333,8 +344,8 @@ class RaylibCDFTApp:
                     y_min=0.0,
                     y_max=y_max_plot,
                     x_label="z / sigma",
-                    y_label="Phi_RF(z)",
-                    primary_label="Phi_RF(z) Free Energy Density",
+                    y_label="Phi(z)",
+                    primary_label=f"Phi(z) Free Energy Density ({self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else 'RF'})",
                     secondary_curves=None,
                     benchmark_points=None,
                 )

@@ -1,39 +1,40 @@
 """Fixed-step Picard iteration solver for Classical Density Functional Theory."""
 
 import math
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import numpy as np
 
-from src.convolutions import FFTConvolver1D
 from src.functionals.base import FMTFunctional
-from src.functionals.rosenfeld import RosenfeldFunctional
 from src.grid import Grid1D
 from src.solvers.base import DFTSolver, SolverResult
 from src.weighted_densities import WeightedDensityCalculator
 
 
 class FixedPicardSolver(DFTSolver):
-    """Fixed-step Picard solver for FMT hard-sphere density functional theory (Roth Sec. 8.1).
-
-    Args:
-        grid: Grid1D spatial domain discretization instance.
-        functional: FMTFunctional excess free energy functional instance.
-        alpha: Fixed Picard mixing parameter in (0, 1] (default 0.02).
-        wall_left: Position of left hard wall (default 0.0).
-        wall_right: Position of right hard wall (default None).
-    """
+    """Fixed-step Picard solver for FMT hard-sphere density functional theory (Roth Sec. 8.1)."""
 
     def __init__(
         self,
         grid: Grid1D,
-        functional: Optional[FMTFunctional] = None,
+        functional: Optional[Union[str, FMTFunctional]] = None,
+        functional_name: Optional[str] = None,
         alpha: float = 0.02,
         wall_left: Optional[float] = 0.0,
         wall_right: Optional[float] = None,
     ) -> None:
+        from src.functionals import FMTFunctional, RosenfeldFunctional, functional_factory
+
         self.grid = grid
-        self.functional = functional if functional is not None else RosenfeldFunctional()
+        if isinstance(functional, str):
+            self.functional = functional_factory(functional)
+        elif functional_name is not None:
+            self.functional = functional_factory(functional_name)
+        elif isinstance(functional, FMTFunctional):
+            self.functional = functional
+        else:
+            self.functional = RosenfeldFunctional()
+
         self.alpha = float(alpha)
         self.wall_left = wall_left
         self.wall_right = wall_right

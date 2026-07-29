@@ -1,6 +1,7 @@
 """Abstract base class interface for Fundamental Measure Theory (FMT) free energy functionals."""
 
 from abc import ABC, abstractmethod
+import math
 from typing import Dict
 
 import numpy as np
@@ -61,3 +62,36 @@ class FMTFunctional(ABC):
             Reduced bulk pressure beta * p [length^-3].
         """
         pass
+
+    def bulk_excess_mu(self, eta: float, sigma: float = 1.0) -> float:
+        """Compute exact analytical bulk excess chemical potential beta * mu_ex.
+
+        Args:
+            eta: Bulk packing fraction.
+            sigma: Sphere diameter.
+
+        Returns:
+            Dimensionless excess chemical potential beta * mu_ex.
+        """
+        R = 0.5 * sigma
+        n0_bulk = eta / ((math.pi / 6.0) * (sigma**3))
+        n1_bulk = n0_bulk * R
+        n2_bulk = n0_bulk * 4.0 * math.pi * (R**2)
+        n3_bulk = eta
+
+        wd_bulk = WeightedDensities(
+            n0=np.array([n0_bulk]),
+            n1=np.array([n1_bulk]),
+            n2=np.array([n2_bulk]),
+            n3=np.array([n3_bulk]),
+            v1=np.array([0.0]),
+            v2=np.array([0.0]),
+        )
+        der = self.evaluate_derivatives(wd_bulk)
+        mu_ex = (
+            der["n0"][0]
+            + R * der["n1"][0]
+            + 4.0 * math.pi * (R**2) * der["n2"][0]
+            + (4.0 / 3.0) * math.pi * (R**3) * der["n3"][0]
+        )
+        return float(mu_ex)

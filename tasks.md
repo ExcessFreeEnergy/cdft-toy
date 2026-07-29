@@ -80,15 +80,15 @@
 ---
 
 ## Step 07: White-Bear (WB) & White-Bear Mark II Functional Extensions
-- [ ] **Objective**: Add WB and WBII functionals with low-density Taylor expansions for numerical stability.
-- [ ] **Details**:
+- [x] **Objective**: Add WB and WBII functionals with low-density Taylor expansions for numerical stability.
+- [x] **Details**:
   - Implement White-Bear term $f_4^{\text{WB}}(n_3)$:
     $$f_4^{\text{WB}}(n_3) = \frac{n_3 + (1 - n_3)^2 \ln(1 - n_3)}{36\pi n_3^2 (1 - n_3)^2}$$
   - Implement low-density Taylor expansion for $f_4^{\text{WB}}(n_3)$ when $n_3 < 10^{-4}$ ($f_4^{\text{WB}}(n_3) = \frac{1}{24\pi}(1 + \frac{2}{3}n_3 + \frac{1}{2}n_3^2 + \dots)$) to prevent $0/0$ indeterminate forms / `NaN` errors.
   - Implement White-Bear Mark II auxiliary functions $\phi_2(n_3)$ and $\phi_3(n_3)$ along with their low-density series expansions.
   - Implement exact functional-specific bulk excess chemical potentials $\beta \mu_{\text{ex}}^{\text{WB}}$ and $\beta \mu_{\text{ex}}^{\text{WBII}}$.
   - Add modular switching between `RF`, `WB`, and `WBII` functionals in the solver engine.
-- [ ] **Deliverable**: `src/functionals/white_bear.py` and modular factory interface in `src/functionals/__init__.py`.
+- [x] **Deliverable**: `src/functionals/white_bear.py` and modular factory interface in `src/functionals/__init__.py`.
 
 ---
 

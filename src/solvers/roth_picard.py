@@ -1,13 +1,11 @@
 """Roth's adaptive line-search Picard solver for Classical Density Functional Theory."""
 
 import math
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import numpy as np
 
-from src.convolutions import FFTConvolver1D
 from src.functionals.base import FMTFunctional
-from src.functionals.rosenfeld import RosenfeldFunctional
 from src.grid import Grid1D
 from src.solvers.base import DFTSolver, SolverResult
 from src.weighted_densities import WeightedDensityCalculator
@@ -32,15 +30,26 @@ class RothPicardSolver(DFTSolver):
     def __init__(
         self,
         grid: Grid1D,
-        functional: Optional[FMTFunctional] = None,
+        functional: Optional[Union[str, FMTFunctional]] = None,
+        functional_name: Optional[str] = None,
         alpha_init: float = 0.03,
         alpha_min: float = 0.001,
         alpha_max: float = 0.10,
         wall_left: Optional[float] = 0.0,
         wall_right: Optional[float] = None,
     ) -> None:
+        from src.functionals import FMTFunctional, RosenfeldFunctional, functional_factory
+
         self.grid = grid
-        self.functional = functional if functional is not None else RosenfeldFunctional()
+        if isinstance(functional, str):
+            self.functional = functional_factory(functional)
+        elif functional_name is not None:
+            self.functional = functional_factory(functional_name)
+        elif isinstance(functional, FMTFunctional):
+            self.functional = functional
+        else:
+            self.functional = RosenfeldFunctional()
+
         self.alpha_init = float(alpha_init)
         self.alpha_min = float(alpha_min)
         self.alpha_max = float(alpha_max)
