@@ -77,8 +77,9 @@ class UIWidgets:
         label: str,
         bg_color: pr.Color = Theme.PRIMARY_BLUE,
         enabled: bool = True,
+        tooltip: str = "",
     ) -> bool:
-        """Draw interactive button and return True if clicked this frame."""
+        """Draw interactive button with optional hover tooltip and return True if clicked this frame."""
         rect = pr.Rectangle(x, y, w, h)
         mouse_pos = pr.get_mouse_position()
         is_hover = pr.check_collision_point_rec(mouse_pos, rect) and enabled
@@ -107,6 +108,19 @@ class UIWidgets:
 
         text_color = Theme.TEXT_PRIMARY if enabled else Theme.TEXT_MUTED
         pr.draw_text(text_bytes, text_x, text_y, font_size, text_color)
+
+        # Render hover tooltip popup if specified
+        if is_hover and tooltip:
+            tt_bytes = tooltip.encode("utf-8")
+            tt_font_size = 11
+            tt_w = pr.measure_text(tt_bytes, tt_font_size) + 12
+            tt_x = min(mouse_pos.x + 10, pr.get_screen_width() - tt_w - 10)
+            tt_y = mouse_pos.y - 28
+
+            tt_rect = pr.Rectangle(tt_x, tt_y, tt_w, 20)
+            pr.draw_rectangle_rec(tt_rect, Theme.PANEL_BG)
+            pr.draw_rectangle_lines_ex(tt_rect, 1.0, Theme.WARNING_AMBER)
+            pr.draw_text(tt_bytes, int(tt_x + 6), int(tt_y + 4), tt_font_size, Theme.TEXT_PRIMARY)
 
         return is_clicked
 

@@ -32,7 +32,12 @@ class Plotter2D:
         y_span = y_max - y_min if y_max > y_min else 1.0
 
         px = self.plot_x + ((z - z_min) / z_span) * self.plot_w
-        py = (self.plot_y + self.plot_h) - ((y_val - y_min) / y_span) * self.plot_h
+
+        if np.isinf(y_val) or np.isnan(y_val):
+            py = self.plot_y if (y_val > 0 or np.isnan(y_val)) else (self.plot_y + self.plot_h)
+        else:
+            py = (self.plot_y + self.plot_h) - ((y_val - y_min) / y_span) * self.plot_h
+
         return px, py
 
     def render(
@@ -140,6 +145,8 @@ class Plotter2D:
             for bz, by in zip(bm_z, bm_y):
                 if z_min <= bz <= z_max:
                     px, py = self.map_to_screen(bz, by, z_min, z_max, y_min, y_max)
+                    px = max(self.plot_x, min(self.plot_x + self.plot_w, px))
+                    py = max(self.plot_y, min(self.plot_y + self.plot_h, py))
                     pr.draw_circle(int(px), int(py), 4.0, Theme.BENCHMARK_DOT)
                     pr.draw_circle_lines(int(px), int(py), 4.0, Theme.TEXT_PRIMARY)
 
@@ -150,15 +157,24 @@ class Plotter2D:
             hover_z = z_min + rel_x * (z_max - z_min)
 
             idx = int(np.clip(np.searchsorted(z_arr, hover_z), 0, len(z_arr) - 1))
-            actual_z = z_arr[idx]
-            actual_y = y_arr[idx]
+            actual_z = float(z_arr[idx])
+            actual_y = float(y_arr[idx])
 
             cur_px, cur_py = self.map_to_screen(actual_z, actual_y, z_min, z_max, y_min, y_max)
+            cur_px = max(self.plot_x, min(self.plot_x + self.plot_w, cur_px))
+            cur_py = max(self.plot_y, min(self.plot_y + self.plot_h, cur_py))
 
             pr.draw_line(int(cur_px), int(self.plot_y), int(cur_px), int(self.plot_y + self.plot_h), Theme.WARNING_AMBER)
             pr.draw_circle(int(cur_px), int(cur_py), 5.0, Theme.WARNING_AMBER)
 
-            tt_str = f"z = {actual_z:.3f}, {y_label} = {actual_y:.4f}".encode("utf-8")
+            if np.isinf(actual_y):
+                val_str = "inf" if actual_y > 0 else "-inf"
+            elif np.isnan(actual_y):
+                val_str = "nan"
+            else:
+                val_str = f"{actual_y:.4f}"
+
+            tt_str = f"z = {actual_z:.3f}, {y_label} = {val_str}".encode("utf-8")
             tt_w = pr.measure_text(tt_str, 12) + 12
             tt_x = min(mouse_pos.x + 10, self.plot_x + self.plot_w - tt_w)
             tt_y = max(mouse_pos.y - 25, self.plot_y + 5)

@@ -4,6 +4,7 @@ import math
 import numpy as np
 import pyray as pr
 
+from src.functionals import RosenfeldFunctional
 from src.grid import Grid1D, PhysicalParameters
 from src.ui.plotter import Plotter2D
 from src.ui.theme import Theme
@@ -24,11 +25,14 @@ class RaylibCDFTApp:
         self.dz = 0.005
         self.geom_idx = 0  # 0: Single Planar Wall, 1: Slit Pore
         self.fmt_idx = 0  # 0: RF, 1: WB, 2: WBII, 3: WB-Tensor
-        self.view_mode_idx = 0  # 0: Density Profile rho(z), 1: Weighted Densities n_alpha(z)
+        self.view_mode_idx = 0  # 0: Density Profile rho(z), 1: Weighted Densities n_alpha(z), 2: Free Energy Phi(z)
 
         self.is_solving = False
         self.show_benchmark = True
         self.iteration = 0
+
+        # Instantiate functional engine
+        self.func = RosenfeldFunctional()
 
         # Physical system, grid, and weighted density calculator init
         self.rebuild_system()
@@ -57,9 +61,12 @@ class RaylibCDFTApp:
         self.rho_init = self.rho.copy()
         self.iteration = 0
 
-        # Compute initial weighted densities via WeightedDensityCalculator
+        # Compute initial weighted densities, free energy density, and PY pressure
         self.wd = self.calc.compute(self.rho)
         self.n_dict = self.wd.to_dict()
+        self.phi = self.func.evaluate_phi(self.wd)
+        self.f_ex = self.func.compute_total_free_energy(self.grid, self.wd)
+        self.p_py = self.func.compute_bulk_pressure(self.eta, self.params.sigma)
 
     def get_benchmark_points(self):
         """Return benchmark Monte Carlo data points from Roth (2010) Fig. 1 for comparison."""
@@ -81,7 +88,7 @@ class RaylibCDFTApp:
         return None
 
     def run_solver_step(self) -> None:
-        """Execute a single solver relaxation step and update weighted densities."""
+        """Execute a single solver relaxation step and update weighted densities & free energy."""
         if not self.is_solving:
             return
 
@@ -99,9 +106,11 @@ class RaylibCDFTApp:
         alpha = min(1.0, 0.02 * self.iteration)
         self.rho[acc] = (1.0 - alpha) * self.rho[acc] + alpha * target_rho
 
-        # Recompute spatial weighted densities via WeightedDensityCalculator
+        # Recompute spatial weighted densities and free energy density
         self.wd = self.calc.compute(self.rho)
         self.n_dict = self.wd.to_dict()
+        self.phi = self.func.evaluate_phi(self.wd)
+        self.f_ex = self.func.compute_total_free_energy(self.grid, self.wd)
 
         if self.iteration >= 50:
             self.is_solving = False
@@ -111,17 +120,33 @@ class RaylibCDFTApp:
         sidebar_w = 340.0
         UIWidgets.draw_panel(10, 45, sidebar_w, self.height - 55, title="FMT Physics & Problem Setup")
 
-        curr_y = 80.0
+        curr_y = 75.0
 
         # 1. Parameter Sliders
         new_eta = UIWidgets.slider(25, curr_y, 310, 35, "Bulk Packing Fraction (eta)", self.eta, 0.01, 0.50, fmt="{:.4f}")
-        curr_y += 48.0
+        curr_y += 42.0
+
+        # Benchmark Preset Quick Buttons
+        btn_w_half = 150.0
+        tt_1a = "Set bulk packing fraction to eta=0.4257 (Roth 2010 Fig 1a)"
+        if UIWidgets.button(25, curr_y, btn_w_half, 22, "Preset: Fig 1a (0.4257)", bg_color=Theme.HEADER_BG, tooltip=tt_1a):
+            self.eta = 0.4257
+            self.geom_idx = 0
+            self.rebuild_system()
+
+        tt_1b = "Set bulk packing fraction to eta=0.4783 (Roth 2010 Fig 1b)"
+        if UIWidgets.button(185, curr_y, btn_w_half, 22, "Preset: Fig 1b (0.4783)", bg_color=Theme.HEADER_BG, tooltip=tt_1b):
+            self.eta = 0.4783
+            self.geom_idx = 0
+            self.rebuild_system()
+
+        curr_y += 28.0
 
         new_Lz = UIWidgets.slider(25, curr_y, 310, 35, "Domain Length (Lz)", self.Lz, 2.0, 15.0, fmt="{:.2f} sigma")
-        curr_y += 48.0
+        curr_y += 42.0
 
         new_dz = UIWidgets.slider(25, curr_y, 310, 35, "Grid Resolution (dz)", self.dz, 0.002, 0.010, fmt="{:.4f} sigma")
-        curr_y += 52.0
+        curr_y += 45.0
 
         # Check parameter changes
         if abs(new_eta - self.eta) > 1e-5 or abs(new_Lz - self.Lz) > 1e-5 or abs(new_dz - self.dz) > 1e-5:
@@ -130,21 +155,23 @@ class RaylibCDFTApp:
             self.dz = new_dz
             self.rebuild_system()
 
-        # 2. Viewport Mode Selection (Density vs Weighted Densities)
-        view_options = ["Density rho(z)", "Weighted n_alpha(z)"]
-        new_view, h_v = UIWidgets.radio_group(25, curr_y, 310, "Plot Viewport Mode:", view_options, self.view_mode_idx, cols=2)
-        curr_y += h_v + 8.0
+        # 2. Viewport Mode Selection (Density vs Weighted Densities vs Free Energy)
+        view_options = ["Density rho", "Weighted n", "Free Energy Phi"]
+        new_view, h_v = UIWidgets.radio_group(25, curr_y, 310, "Plot Viewport Mode:", view_options, self.view_mode_idx, cols=3)
+        curr_y += h_v + 6.0
         if new_view != self.view_mode_idx:
             self.view_mode_idx = new_view
             if self.view_mode_idx == 0:
                 self.plotter_main.title = "Density Profile rho(z)"
-            else:
+            elif self.view_mode_idx == 1:
                 self.plotter_main.title = "Spatial Weighted Densities n_alpha(z) (FFT Convolutions)"
+            else:
+                self.plotter_main.title = "Rosenfeld Excess Free Energy Density Phi_RF(z)"
 
         # 3. Geometry Selection (2 columns)
         geom_options = ["Single Wall (z=0)", "Slit Pore"]
         new_geom, h_g = UIWidgets.radio_group(25, curr_y, 310, "Geometry Mode:", geom_options, self.geom_idx, cols=2)
-        curr_y += h_g + 8.0
+        curr_y += h_g + 6.0
         if new_geom != self.geom_idx:
             self.geom_idx = new_geom
             self.rebuild_system()
@@ -152,14 +179,14 @@ class RaylibCDFTApp:
         # 4. FMT Functional Variant Selection (2 columns x 2 rows)
         fmt_options = ["RF (Original)", "WB (White-Bear)", "WBII (Mark II)", "WB-Tensor"]
         new_fmt, h_f = UIWidgets.radio_group(25, curr_y, 310, "FMT Functional Variant:", fmt_options, self.fmt_idx, cols=2)
-        curr_y += h_f + 10.0
+        curr_y += h_f + 8.0
         if new_fmt != self.fmt_idx:
             self.fmt_idx = new_fmt
             self.rebuild_system()
 
         # 5. Action Buttons
         btn_w = 150.0
-        btn_h = 30.0
+        btn_h = 28.0
 
         solve_label = "Pause" if self.is_solving else "Solve / Relax"
         if UIWidgets.button(25, curr_y, btn_w, btn_h, solve_label, bg_color=Theme.PRIMARY_BLUE):
@@ -168,17 +195,18 @@ class RaylibCDFTApp:
         if UIWidgets.button(185, curr_y, btn_w, btn_h, "Reset Profile", bg_color=Theme.SLIDER_BG):
             self.rebuild_system()
 
-        curr_y += 36.0
+        curr_y += 32.0
 
-        bm_label = "Hide Benchmark" if self.show_benchmark else "Show Benchmark"
-        if UIWidgets.button(25, curr_y, 310, btn_h, bm_label, bg_color=Theme.HEADER_BG):
+        bm_label = "Hide Benchmark Dots" if self.show_benchmark else "Show Benchmark Dots"
+        bm_tooltip = "Toggle Monte Carlo reference dots from Roth (2010) Fig. 1a (eta=0.4257) & Fig. 1b (eta=0.4783)"
+        if UIWidgets.button(25, curr_y, 310, btn_h, bm_label, bg_color=Theme.HEADER_BG, tooltip=bm_tooltip):
             self.show_benchmark = not self.show_benchmark
 
-        curr_y += 40.0
+        curr_y += 34.0
 
         # 6. Physics Info Card & Physical Feasibility Badge
-        UIWidgets.draw_panel(25, curr_y, 310, 160, title="System Thermodynamics & Info", bg_color=Theme.BG_DARK)
-        info_y = curr_y + 32
+        UIWidgets.draw_panel(25, curr_y, 310, 150, title="System Thermodynamics & Info", bg_color=Theme.BG_DARK)
+        info_y = curr_y + 28
 
         max_n3 = self.wd.max_n3
         if max_n3 < 0.90:
@@ -194,15 +222,15 @@ class RaylibCDFTApp:
         info_lines = [
             (f"Sphere Radius (R)  : {self.params.radius:.4f} sigma", Theme.TEXT_PRIMARY),
             (f"Bulk Density (rho) : {self.params.rho_bulk:.6f}", Theme.TEXT_PRIMARY),
-            (f"Grid Spacing (dz)  : {self.grid.dz:.4f} sigma", Theme.TEXT_PRIMARY),
+            (f"PY Pressure (beta*p): {self.p_py:.4f}", Theme.PRIMARY_BLUE),
+            (f"Excess Energy (F_ex): {self.f_ex:.4f} kBT", Theme.WARNING_AMBER),
             (f"Max Packing (n3)   : {status_n3}", badge_color),
-            (f"Feasible (n3 < 1)  : {'YES' if self.wd.is_feasible else 'NO (Divergent)'}", badge_color),
             (f"Status             : {'Solving...' if self.is_solving else 'Ready / Idle'}", Theme.SUCCESS_GREEN if self.is_solving else Theme.TEXT_PRIMARY),
         ]
 
         for line, color in info_lines:
-            pr.draw_text(line.encode("utf-8"), int(38), int(info_y), 12, color)
-            info_y += 20
+            pr.draw_text(line.encode("utf-8"), int(38), int(info_y), 11, color)
+            info_y += 18
 
     def run(self) -> None:
         """Main Raylib frame loop."""
@@ -250,7 +278,7 @@ class RaylibCDFTApp:
                     secondary_curves=sec_curves,
                     benchmark_points=bm_pts,
                 )
-            else:
+            elif self.view_mode_idx == 1:
                 # Spatial Weighted Densities View (FFT Convolutions)
                 n3_arr = self.wd.n3
                 n2_arr = self.wd.n2
@@ -273,6 +301,23 @@ class RaylibCDFTApp:
                     y_label="n_alpha(z)",
                     primary_label="n3(z) Packing Fraction",
                     secondary_curves=sec_curves,
+                    benchmark_points=None,
+                )
+            else:
+                # Excess Free Energy Density Phi(z) View
+                y_max_plot = max(1.0, np.max(self.phi) * 1.2)
+
+                self.plotter_main.render(
+                    z_arr=self.grid.z,
+                    y_arr=self.phi,
+                    z_min=0.0,
+                    z_max=self.Lz,
+                    y_min=0.0,
+                    y_max=y_max_plot,
+                    x_label="z / sigma",
+                    y_label="Phi_RF(z)",
+                    primary_label="Phi_RF(z) Free Energy Density",
+                    secondary_curves=None,
                     benchmark_points=None,
                 )
 
