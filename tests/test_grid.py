@@ -1,6 +1,7 @@
 """Unit tests for PhysicalParameters and Grid1D discretization (Step 01)."""
 
 import math
+
 import numpy as np
 import pytest
 

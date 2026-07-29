@@ -2,7 +2,6 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Tuple
 
 import numpy as np
 
@@ -27,14 +26,14 @@ class SolverResult:
     rho: np.ndarray
     c1: np.ndarray
     c1_bulk: float
-    history_residual: List[float]
+    history_residual: list[float]
 
 
 class DFTSolver(ABC):
     """Abstract base class for Classical Density Functional Theory solvers."""
 
     @abstractmethod
-    def compute_c1(self, rho: np.ndarray) -> Tuple[np.ndarray, float]:
+    def compute_c1(self, rho: np.ndarray) -> tuple[np.ndarray, float]:
         """Compute spatial one-body direct correlation function c^(1)(z) and bulk correlation c1_bulk.
 
         Args:
@@ -43,10 +42,11 @@ class DFTSolver(ABC):
         Returns:
             Tuple of (c1(z) array, c1_bulk scalar).
         """
-        pass
 
     @abstractmethod
-    def solve_step(self, rho: np.ndarray, alpha: float) -> Tuple[np.ndarray, np.ndarray, float]:
+    def solve_step(
+        self, rho: np.ndarray, alpha: float
+    ) -> tuple[np.ndarray, np.ndarray, float]:
         """Execute a single Picard iteration step.
 
         Args:
@@ -56,7 +56,6 @@ class DFTSolver(ABC):
         Returns:
             Tuple of (updated rho array, c1(z) array, residual norm).
         """
-        pass
 
     @abstractmethod
     def solve(
@@ -77,4 +76,3 @@ class DFTSolver(ABC):
         Returns:
             SolverResult container.
         """
-        pass

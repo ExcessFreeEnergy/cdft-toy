@@ -1,7 +1,6 @@
 """Fixed-step Picard iteration solver for Classical Density Functional Theory."""
 
 import math
-from typing import Optional, Tuple, Union
 
 import numpy as np
 
@@ -17,11 +16,11 @@ class FixedPicardSolver(DFTSolver):
     def __init__(
         self,
         grid: Grid1D,
-        functional: Optional[Union[str, FMTFunctional]] = None,
-        functional_name: Optional[str] = None,
+        functional: str | FMTFunctional | None = None,
+        functional_name: str | None = None,
         alpha: float = 0.02,
-        wall_left: Optional[float] = 0.0,
-        wall_right: Optional[float] = None,
+        wall_left: float | None = 0.0,
+        wall_right: float | None = None,
     ) -> None:
         from src.functionals import RosenfeldFunctional, functional_factory
 
@@ -49,7 +48,6 @@ class FixedPicardSolver(DFTSolver):
 
     def compute_c1_bulk(self) -> float:
         """Compute exact theoretical bulk direct correlation scalar c1_bulk."""
-        eta = self.grid.params.eta
         rho_bulk = self.grid.params.rho_bulk
         R = self.grid.params.radius
 
@@ -71,7 +69,7 @@ class FixedPicardSolver(DFTSolver):
         c1_bulk = -(d0 * 1.0 + d1 * R + d2 * s_sphere + d3 * v_sphere)
         return float(c1_bulk)
 
-    def compute_c1(self, rho: np.ndarray) -> Tuple[np.ndarray, float]:
+    def compute_c1(self, rho: np.ndarray) -> tuple[np.ndarray, float]:
         """Compute spatial one-body direct correlation function c^(1)(z) and bulk correlation c1_bulk.
 
         Formula (Roth Eq. 28):
@@ -79,16 +77,20 @@ class FixedPicardSolver(DFTSolver):
         """
         wd = self.calc.compute(rho)
         df_dn_dict = self.functional.evaluate_derivatives(wd)
-        c1_conv_dict = self.convolver.compute_direct_correlation_convolutions(df_dn_dict)
+        c1_conv_dict = self.convolver.compute_direct_correlation_convolutions(
+            df_dn_dict
+        )
 
         # Sum convolution components: c^(1)(z) = - sum_alpha conv_alpha(z)
         c1 = np.zeros_like(self.grid.z, dtype=float)
-        for key, conv_arr in c1_conv_dict.items():
+        for conv_arr in c1_conv_dict.values():
             c1 -= conv_arr
 
         return c1, self.c1_bulk
 
-    def solve_step(self, rho: np.ndarray, alpha: Optional[float] = None) -> Tuple[np.ndarray, np.ndarray, float]:
+    def solve_step(
+        self, rho: np.ndarray, alpha: float | None = None
+    ) -> tuple[np.ndarray, np.ndarray, float]:
         """Execute a single Picard iteration step.
 
         Args:
@@ -107,7 +109,9 @@ class FixedPicardSolver(DFTSolver):
 
         # Protect against exponential numerical overflow during early iterations
         delta_c1_clipped = np.clip(delta_c1, -10.0, 3.5)
-        rho_target[self.accessible] = self.grid.params.rho_bulk * np.exp(delta_c1_clipped)
+        rho_target[self.accessible] = self.grid.params.rho_bulk * np.exp(
+            delta_c1_clipped
+        )
 
         # Calculate L2 residual norm normalized by domain length Lz
         diff_sq = (rho_target - rho) ** 2
@@ -121,10 +125,10 @@ class FixedPicardSolver(DFTSolver):
 
     def solve(
         self,
-        rho_init: Optional[np.ndarray] = None,
+        rho_init: np.ndarray | None = None,
         max_iter: int = 2000,
         tol: float = 1e-7,
-        alpha: Optional[float] = None,
+        alpha: float | None = None,
     ) -> SolverResult:
         """Execute iterative relaxation solver until convergence or max_iter."""
         mix_alpha = alpha if alpha is not None else self.alpha

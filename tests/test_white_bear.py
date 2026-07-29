@@ -41,7 +41,9 @@ def test_wb_low_density_series_continuity():
     c = 1e-3
 
     # Test f4_WB analytic vs series at cutoff
-    f4_analytic = (c + (1 - c) ** 2 * math.log(1 - c)) / (36 * math.pi * c**2 * (1 - c) ** 2)
+    f4_analytic = (c + (1 - c) ** 2 * math.log(1 - c)) / (
+        36 * math.pi * c**2 * (1 - c) ** 2
+    )
     f4_series = _f4_wb_series(np.array([c]))[0]
     assert math.isclose(f4_analytic, f4_series, rel_tol=1e-6)
 
@@ -51,7 +53,9 @@ def test_wb_low_density_series_continuity():
     assert math.isclose(phi2_analytic, phi2_series, rel_tol=1e-6)
 
     # Test phi3 analytic vs series at cutoff
-    phi3_analytic = (2 * c - 3 * c**2 + 2 * c**3 + 2 * (1 - c) ** 2 * math.log(1 - c)) / (c**2)
+    phi3_analytic = (
+        2 * c - 3 * c**2 + 2 * c**3 + 2 * (1 - c) ** 2 * math.log(1 - c)
+    ) / (c**2)
     phi3_series = _phi3_series(np.array([c]))[0]
     assert math.isclose(phi3_analytic, phi3_series, rel_tol=1e-6)
 
@@ -76,20 +80,40 @@ def test_wb_analytical_derivatives_finite_difference():
 
     # Check n3 derivative
     wd_p = WeightedDensities(
-        n0=np.array([n0]), n1=np.array([n1]), n2=np.array([n2]), n3=np.array([n3 + h]), v1=np.array([v1]), v2=np.array([v2])
+        n0=np.array([n0]),
+        n1=np.array([n1]),
+        n2=np.array([n2]),
+        n3=np.array([n3 + h]),
+        v1=np.array([v1]),
+        v2=np.array([v2]),
     )
     wd_m = WeightedDensities(
-        n0=np.array([n0]), n1=np.array([n1]), n2=np.array([n2]), n3=np.array([n3 - h]), v1=np.array([v1]), v2=np.array([v2])
+        n0=np.array([n0]),
+        n1=np.array([n1]),
+        n2=np.array([n2]),
+        n3=np.array([n3 - h]),
+        v1=np.array([v1]),
+        v2=np.array([v2]),
     )
     fd_n3 = (wb.evaluate_phi(wd_p)[0] - wb.evaluate_phi(wd_m)[0]) / (2 * h)
     assert math.isclose(anal["n3"][0], fd_n3, rel_tol=1e-5)
 
     # Check n2 derivative
     wd_p2 = WeightedDensities(
-        n0=np.array([n0]), n1=np.array([n1]), n2=np.array([n2 + h]), n3=np.array([n3]), v1=np.array([v1]), v2=np.array([v2])
+        n0=np.array([n0]),
+        n1=np.array([n1]),
+        n2=np.array([n2 + h]),
+        n3=np.array([n3]),
+        v1=np.array([v1]),
+        v2=np.array([v2]),
     )
     wd_m2 = WeightedDensities(
-        n0=np.array([n0]), n1=np.array([n1]), n2=np.array([n2 - h]), n3=np.array([n3]), v1=np.array([v1]), v2=np.array([v2])
+        n0=np.array([n0]),
+        n1=np.array([n1]),
+        n2=np.array([n2 - h]),
+        n3=np.array([n3]),
+        v1=np.array([v1]),
+        v2=np.array([v2]),
     )
     fd_n2 = (wb.evaluate_phi(wd_p2)[0] - wb.evaluate_phi(wd_m2)[0]) / (2 * h)
     assert math.isclose(anal["n2"][0], fd_n2, rel_tol=1e-5)
@@ -115,20 +139,40 @@ def test_wb2_analytical_derivatives_finite_difference():
 
     # Check n3 derivative
     wd_p = WeightedDensities(
-        n0=np.array([n0]), n1=np.array([n1]), n2=np.array([n2]), n3=np.array([n3 + h]), v1=np.array([v1]), v2=np.array([v2])
+        n0=np.array([n0]),
+        n1=np.array([n1]),
+        n2=np.array([n2]),
+        n3=np.array([n3 + h]),
+        v1=np.array([v1]),
+        v2=np.array([v2]),
     )
     wd_m = WeightedDensities(
-        n0=np.array([n0]), n1=np.array([n1]), n2=np.array([n2]), n3=np.array([n3 - h]), v1=np.array([v1]), v2=np.array([v2])
+        n0=np.array([n0]),
+        n1=np.array([n1]),
+        n2=np.array([n2]),
+        n3=np.array([n3 - h]),
+        v1=np.array([v1]),
+        v2=np.array([v2]),
     )
     fd_n3 = (wb2.evaluate_phi(wd_p)[0] - wb2.evaluate_phi(wd_m)[0]) / (2 * h)
     assert math.isclose(anal["n3"][0], fd_n3, rel_tol=1e-5)
 
     # Check n2 derivative
     wd_p2 = WeightedDensities(
-        n0=np.array([n0]), n1=np.array([n1]), n2=np.array([n2 + h]), n3=np.array([n3]), v1=np.array([v1]), v2=np.array([v2])
+        n0=np.array([n0]),
+        n1=np.array([n1]),
+        n2=np.array([n2 + h]),
+        n3=np.array([n3]),
+        v1=np.array([v1]),
+        v2=np.array([v2]),
     )
     wd_m2 = WeightedDensities(
-        n0=np.array([n0]), n1=np.array([n1]), n2=np.array([n2 - h]), n3=np.array([n3]), v1=np.array([v1]), v2=np.array([v2])
+        n0=np.array([n0]),
+        n1=np.array([n1]),
+        n2=np.array([n2 - h]),
+        n3=np.array([n3]),
+        v1=np.array([v1]),
+        v2=np.array([v2]),
     )
     fd_n2 = (wb2.evaluate_phi(wd_p2)[0] - wb2.evaluate_phi(wd_m2)[0]) / (2 * h)
     assert math.isclose(anal["n2"][0], fd_n2, rel_tol=1e-5)

@@ -1,9 +1,7 @@
 """FFT-based 1D convolution engine for weighted densities and direct correlation functions."""
 
-from typing import Dict, Optional
-
 import numpy as np
-import scipy.fft as fft
+from scipy import fft
 
 from src.grid import Grid1D
 from src.weights import PlanarWeights
@@ -35,7 +33,7 @@ class FFTConvolver1D:
         self.N_fft = int(fft.next_fast_len(min_len))
 
         # Pre-compute FFT transforms of padded weight functions
-        self.fft_weights: Dict[str, np.ndarray] = {}
+        self.fft_weights: dict[str, np.ndarray] = {}
         for key, w_arr in self.weights_dict.items():
             # Pad weight array such that origin z=0 is at index 0 and negative lags wrap to end of N_fft
             padded_w = np.zeros(self.N_fft, dtype=float)
@@ -43,7 +41,9 @@ class FFTConvolver1D:
             padded_w[self.N_fft - self.center_idx :] = w_arr[: self.center_idx]
             self.fft_weights[key] = fft.fft(padded_w, n=self.N_fft)
 
-    def _convolve_raw(self, f: np.ndarray, key: str, parity_flip: bool = False) -> np.ndarray:
+    def _convolve_raw(
+        self, f: np.ndarray, key: str, parity_flip: bool = False
+    ) -> np.ndarray:
         """Core zero-padded FFT spatial convolution (f * w)(z) = integral f(z') w(z - z') dz'."""
         padded_f = np.zeros(self.N_fft, dtype=float)
         padded_f[: self.N_grid] = f
@@ -57,7 +57,7 @@ class FFTConvolver1D:
         conv_full = np.real(fft.ifft(fft_f * fft_w)) * self.grid.dz
         return conv_full[: self.N_grid]
 
-    def compute_weighted_densities(self, rho: np.ndarray) -> Dict[str, np.ndarray]:
+    def compute_weighted_densities(self, rho: np.ndarray) -> dict[str, np.ndarray]:
         """Compute all spatial weighted densities (n0, n1, n2, n3, v1, v2, n_m2) in a single FFT forward pass.
 
         Args:
@@ -71,7 +71,7 @@ class FFTConvolver1D:
         padded_rho[: self.N_grid] = rho
         fft_rho = fft.fft(padded_rho, n=self.N_fft)
 
-        result: Dict[str, np.ndarray] = {}
+        result: dict[str, np.ndarray] = {}
         dz = self.grid.dz
 
         for key, fft_w in self.fft_weights.items():
@@ -81,8 +81,8 @@ class FFTConvolver1D:
         return result
 
     def compute_direct_correlation_convolutions(
-        self, df_dn_dict: Dict[str, np.ndarray]
-    ) -> Dict[str, np.ndarray]:
+        self, df_dn_dict: dict[str, np.ndarray]
+    ) -> dict[str, np.ndarray]:
         """Compute convolution integrals integral (dPhi/dn_alpha)(z') w_alpha(z' - z) dz'.
 
         Applies odd parity sign flip for vector weight components (v1, v2).
@@ -93,7 +93,7 @@ class FFTConvolver1D:
         Returns:
             Dictionary mapping weight key to convolution integral array.
         """
-        result: Dict[str, np.ndarray] = {}
+        result: dict[str, np.ndarray] = {}
         for key, df_dn in df_dn_dict.items():
             is_vector = PlanarWeights.PARITY_IS_VECTOR.get(key, False)
             result[key] = self._convolve_raw(df_dn, key, parity_flip=is_vector)

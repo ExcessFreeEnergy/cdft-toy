@@ -42,7 +42,12 @@ def test_finite_difference_partial_derivatives():
 
         # Ignore unphysical boundary region where n3 ~ 1 or 0 division edge cases occurs
         valid_mask = np.isfinite(fd_derivative) & np.isfinite(analytical_derivative)
-        assert np.allclose(analytical_derivative[valid_mask], fd_derivative[valid_mask], rtol=1e-5, atol=1e-6)
+        assert np.allclose(
+            analytical_derivative[valid_mask],
+            fd_derivative[valid_mask],
+            rtol=1e-5,
+            atol=1e-6,
+        )
 
 
 def test_bulk_percus_yevick_pressure_agreement():
@@ -63,7 +68,9 @@ def test_bulk_percus_yevick_pressure_agreement():
         bulk_idx = grid.num_points // 2
         computed_d_n3 = derivatives["n3"][bulk_idx]
 
-        expected_py_pressure = func.compute_bulk_pressure(eta=eta_test, sigma=params.sigma)
+        expected_py_pressure = func.compute_bulk_pressure(
+            eta=eta_test, sigma=params.sigma
+        )
         assert pytest.approx(computed_d_n3, rel=1e-3) == expected_py_pressure
 
 

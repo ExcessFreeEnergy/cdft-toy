@@ -1,6 +1,7 @@
 """Demonstration script for Step 06: Roth's Adaptive Line-Search Mixing Scheme."""
 
 import numpy as np
+
 from src.grid import Grid1D, PhysicalParameters
 from src.solvers import FixedPicardSolver, RothPicardSolver
 
@@ -20,7 +21,9 @@ def main():
 
         idx_contact = np.searchsorted(grid.z, params.radius)
 
-        print(f"\n1. HIGH-DENSITY BENCHMARK CONVERGENCE ({fig_name}, eta = {eta_test}):")
+        print(
+            f"\n1. HIGH-DENSITY BENCHMARK CONVERGENCE ({fig_name}, eta = {eta_test}):"
+        )
         print(f"   Converged Status            : {result.converged}")
         print(f"   Iterations Executed (k)    : {result.iterations}")
         print(f"   Final Residual Norm (R)     : {result.residual:.6e}")
@@ -40,7 +43,9 @@ def main():
 
     print(f"   Fixed Picard Iterations     : {res_fixed.iterations}")
     print(f"   Roth Adaptive Iterations    : {res_roth.iterations}")
-    print(f"   Speedup Factor              : {res_fixed.iterations / res_roth.iterations:.2f}x faster")
+    print(
+        f"   Speedup Factor              : {res_fixed.iterations / res_roth.iterations:.2f}x faster"
+    )
 
     print("\nStep 06 Roth Adaptive Line-Search Solver fully functioning!")
     print("=" * 75)

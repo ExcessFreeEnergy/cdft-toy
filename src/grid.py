@@ -2,7 +2,6 @@
 
 import math
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 
@@ -60,9 +59,9 @@ class Grid1D:
 
     def __init__(
         self,
-        params: Optional[PhysicalParameters] = None,
-        Lz: Optional[float] = None,
-        dz: Optional[float] = None,
+        params: PhysicalParameters | None = None,
+        Lz: float | None = None,
+        dz: float | None = None,
     ) -> None:
         self.params = params if params is not None else PhysicalParameters()
 
@@ -71,20 +70,22 @@ class Grid1D:
         self.dz = dz if dz is not None else 0.005 * sigma
 
         if self.dz > 0.01 * sigma + 1e-12:
-            raise ValueError(f"Grid spacing dz={self.dz} exceeds maximum allowable spacing 0.01*sigma ({0.01*sigma}).")
+            raise ValueError(
+                f"Grid spacing dz={self.dz} exceeds maximum allowable spacing 0.01*sigma ({0.01 * sigma})."
+            )
         if self.Lz <= 0:
             raise ValueError(f"Domain length Lz={self.Lz} must be positive.")
 
         # Construct 1D spatial coordinate array z in [0, Lz]
-        self.num_points = int(round(self.Lz / self.dz)) + 1
+        self.num_points = round(self.Lz / self.dz) + 1
         self.z = np.linspace(0.0, self.Lz, self.num_points)
         # Update dz to exact grid step size
         self.dz = float(self.z[1] - self.z[0])
 
     def external_potential(
         self,
-        wall_left: Optional[float] = 0.0,
-        wall_right: Optional[float] = None,
+        wall_left: float | None = 0.0,
+        wall_right: float | None = None,
     ) -> np.ndarray:
         """Compute external hard wall potential V_ext(z).
 
@@ -114,8 +115,8 @@ class Grid1D:
 
     def is_accessible(
         self,
-        wall_left: Optional[float] = 0.0,
-        wall_right: Optional[float] = None,
+        wall_left: float | None = 0.0,
+        wall_right: float | None = None,
     ) -> np.ndarray:
         """Boolean mask indicating accessible regions for particle centers (V_ext == 0)."""
         v_ext = self.external_potential(wall_left, wall_right)
@@ -123,9 +124,9 @@ class Grid1D:
 
     def initial_density_profile(
         self,
-        rho_bulk: Optional[float] = None,
-        wall_left: Optional[float] = 0.0,
-        wall_right: Optional[float] = None,
+        rho_bulk: float | None = None,
+        wall_left: float | None = 0.0,
+        wall_right: float | None = None,
     ) -> np.ndarray:
         """Construct initial guess for density profile rho(z) = rho_bulk * exp(-beta * V_ext(z)).
 

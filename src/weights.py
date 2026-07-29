@@ -1,7 +1,7 @@
 """1D Planar geometrical weight functions for FMT classical density functional theory."""
 
 import math
-from typing import Dict, Tuple
+from typing import ClassVar
 
 import numpy as np
 
@@ -14,7 +14,7 @@ class PlanarWeights:
     """
 
     # Parity dictionary: True for odd vector components, False for even scalar components
-    PARITY_IS_VECTOR: Dict[str, bool] = {
+    PARITY_IS_VECTOR: ClassVar[dict[str, bool]] = {
         "n0": False,
         "n1": False,
         "n2": False,
@@ -27,7 +27,7 @@ class PlanarWeights:
     def __init__(self, radius: float = 0.5) -> None:
         self.radius = float(radius)
 
-    def evaluate_analytical_integrals(self) -> Dict[str, float]:
+    def evaluate_analytical_integrals(self) -> dict[str, float]:
         """Return exact analytical 1D integrals over [-R, R] for verification.
 
         - int_{-R}^R w_3(z) dz = (4/3)*pi*R^3 = V_sphere
@@ -54,7 +54,7 @@ class PlanarWeights:
 
     def get_grid_and_weights(
         self, dz: float, apply_endpoint_modification: bool = True
-    ) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
+    ) -> tuple[np.ndarray, dict[str, np.ndarray]]:
         """Evaluate weight function arrays on 1D grid z_w in [-R, R].
 
         Args:
@@ -66,7 +66,7 @@ class PlanarWeights:
             Tuple of (z_w grid array, dictionary of weight arrays).
         """
         R = self.radius
-        M = int(round(R / dz))
+        M = round(R / dz)
         z_w = np.linspace(-M * dz, M * dz, 2 * M + 1)
 
         abs_z = np.abs(z_w)
@@ -91,12 +91,19 @@ class PlanarWeights:
         wm2 = np.zeros_like(z_w, dtype=float)
         wm2[mask] = 2.0 * math.pi * R * (((z_w[mask] ** 2) / (R**2)) - (1.0 / 3.0))
 
-        weights = {"n0": w0, "n1": w1, "n2": w2, "n3": w3, "v1": v1, "v2": v2, "n_m2": wm2}
+        weights = {
+            "n0": w0,
+            "n1": w1,
+            "n2": w2,
+            "n3": w3,
+            "v1": v1,
+            "v2": v2,
+            "n_m2": wm2,
+        }
 
         # 3. Section 8.4 Endpoint Weight Modifications (High-Order Simpson Quadrature)
         if apply_endpoint_modification and M >= 3:
-            for key in weights:
-                w_arr = weights[key]
+            for w_arr in weights.values():
                 # Boundary endpoints at x = +-R (index 0 and -1)
                 w_arr[0] *= 3.0 / 8.0
                 w_arr[-1] *= 3.0 / 8.0

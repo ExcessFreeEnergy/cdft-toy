@@ -1,7 +1,7 @@
 """Unit tests for UI plotter coordinate mapping and widget helper logic (Step 11)."""
 
-import numpy as np
 import pytest
+
 from src.ui.plotter import Plotter2D
 from src.ui.theme import Theme
 

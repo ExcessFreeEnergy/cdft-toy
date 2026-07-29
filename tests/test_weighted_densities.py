@@ -1,6 +1,5 @@
 """Unit tests for WeightedDensityCalculator and WeightedDensities (Step 03)."""
 
-import math
 import numpy as np
 import pytest
 

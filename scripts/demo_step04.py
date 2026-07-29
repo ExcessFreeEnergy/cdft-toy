@@ -1,6 +1,7 @@
 """Demonstration script for Step 04: Rosenfeld (RF) Excess Free Energy Density & Partial Derivatives."""
 
 import numpy as np
+
 from src.functionals import RosenfeldFunctional
 from src.grid import Grid1D, PhysicalParameters
 from src.weighted_densities import WeightedDensityCalculator
@@ -30,7 +31,9 @@ def main():
 
     print("\n1. ROSENFELD FREE ENERGY DENSITY & TOTAL ENERGY:")
     print(f"   Peak Energy Density max(Phi) : {np.max(phi):.6f} kBT / sigma^3")
-    print(f"   Bulk Energy Density Phi_bulk : {phi[grid.num_points // 2]:.6f} kBT / sigma^3")
+    print(
+        f"   Bulk Energy Density Phi_bulk : {phi[grid.num_points // 2]:.6f} kBT / sigma^3"
+    )
     print(f"   Total Excess Free Energy F_ex: {f_ex:.6f} kBT")
 
     # 2. Percus-Yevick Bulk Pressure Check
@@ -55,7 +58,7 @@ def main():
     for key in ["n0", "n1", "n2", "n3", "v1", "v2"]:
         wd_plus_dict = {k: v.copy() for k, v in wd_dict.items()}
         wd_plus_dict[key][idx_sample] += eps
-        phi_plus = func.evaluate_phi(WeightedDensityCalculator(grid).compute(rho))[idx_sample]
+        func.evaluate_phi(WeightedDensityCalculator(grid).compute(rho))[idx_sample]
 
         # Use local analytical value
         val_ana = derivatives[key][idx_sample]

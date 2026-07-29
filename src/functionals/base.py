@@ -1,8 +1,7 @@
 """Abstract base class interface for Fundamental Measure Theory (FMT) free energy functionals."""
 
-from abc import ABC, abstractmethod
 import math
-from typing import Dict
+from abc import ABC, abstractmethod
 
 import numpy as np
 
@@ -23,10 +22,9 @@ class FMTFunctional(ABC):
         Returns:
             1D array of local excess free energy density values matching spatial grid.
         """
-        pass
 
     @abstractmethod
-    def evaluate_derivatives(self, wd: WeightedDensities) -> Dict[str, np.ndarray]:
+    def evaluate_derivatives(self, wd: WeightedDensities) -> dict[str, np.ndarray]:
         """Evaluate analytical partial derivatives (dPhi / dn_alpha) for all weight components.
 
         Args:
@@ -35,7 +33,6 @@ class FMTFunctional(ABC):
         Returns:
             Dictionary mapping weight key ('n0','n1','n2','n3','v1','v2') to derivative array.
         """
-        pass
 
     def compute_total_free_energy(self, grid: Grid1D, wd: WeightedDensities) -> float:
         """Compute spatial integral of total excess free energy F_ex = integral_0^Lz Phi(z) dz.
@@ -61,7 +58,6 @@ class FMTFunctional(ABC):
         Returns:
             Reduced bulk pressure beta * p [length^-3].
         """
-        pass
 
     def bulk_excess_mu(self, eta: float, sigma: float = 1.0) -> float:
         """Compute exact analytical bulk excess chemical potential beta * mu_ex.

@@ -1,7 +1,7 @@
 """Interactive UI widgets for Raylib cDFT application with clean layout and typography."""
 
-from typing import List, Tuple
 import pyray as pr
+
 from src.ui.theme import Theme
 
 
@@ -10,7 +10,12 @@ class UIWidgets:
 
     @staticmethod
     def draw_panel(
-        x: float, y: float, w: float, h: float, title: str = "", bg_color: pr.Color = Theme.PANEL_BG
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        title: str = "",
+        bg_color: pr.Color = Theme.PANEL_BG,
     ) -> None:
         """Draw a UI container panel with optional header title."""
         rect = pr.Rectangle(x, y, w, h)
@@ -21,7 +26,9 @@ class UIWidgets:
             header_rect = pr.Rectangle(x, y, w, 28)
             pr.draw_rectangle_rec(header_rect, Theme.HEADER_BG)
             pr.draw_rectangle_lines_ex(header_rect, 1.0, Theme.PANEL_BORDER)
-            pr.draw_text(title.encode("utf-8"), int(x + 10), int(y + 6), 14, Theme.TEXT_PRIMARY)
+            pr.draw_text(
+                title.encode("utf-8"), int(x + 10), int(y + 6), 14, Theme.TEXT_PRIMARY
+            )
 
     @staticmethod
     def slider(
@@ -47,7 +54,9 @@ class UIWidgets:
         mouse_pos = pr.get_mouse_position()
         mouse_down = pr.is_mouse_button_down(pr.MOUSE_BUTTON_LEFT)
 
-        val_ratio = (value - min_val) / (max_val - min_val) if max_val > min_val else 0.0
+        val_ratio = (
+            (value - min_val) / (max_val - min_val) if max_val > min_val else 0.0
+        )
         val_ratio = max(0.0, min(1.0, val_ratio))
 
         hit_rect = pr.Rectangle(x, slider_y - 4, w, slider_h + 8)
@@ -92,7 +101,9 @@ class UIWidgets:
             fill_color = Theme.PRIMARY_HOVER
 
         pr.draw_rectangle_rec(rect, fill_color)
-        pr.draw_rectangle_lines_ex(rect, 1.0, Theme.PANEL_BORDER if enabled else Theme.GRID_LINE)
+        pr.draw_rectangle_lines_ex(
+            rect, 1.0, Theme.PANEL_BORDER if enabled else Theme.GRID_LINE
+        )
 
         # Auto-adjust font size to ensure text fits button width without overlapping
         font_size = 13
@@ -120,14 +131,22 @@ class UIWidgets:
             tt_rect = pr.Rectangle(tt_x, tt_y, tt_w, 20)
             pr.draw_rectangle_rec(tt_rect, Theme.PANEL_BG)
             pr.draw_rectangle_lines_ex(tt_rect, 1.0, Theme.WARNING_AMBER)
-            pr.draw_text(tt_bytes, int(tt_x + 6), int(tt_y + 4), tt_font_size, Theme.TEXT_PRIMARY)
+            pr.draw_text(
+                tt_bytes, int(tt_x + 6), int(tt_y + 4), tt_font_size, Theme.TEXT_PRIMARY
+            )
 
         return is_clicked
 
     @staticmethod
     def radio_group(
-        x: float, y: float, w: float, label: str, options: List[str], selected_idx: int, cols: int = 2
-    ) -> Tuple[int, float]:
+        x: float,
+        y: float,
+        w: float,
+        label: str,
+        options: list[str],
+        selected_idx: int,
+        cols: int = 2,
+    ) -> tuple[int, float]:
         """Draw radio selection grid (multi-column) to prevent text overlap.
 
         Returns (new_selected_index, total_height_used).

@@ -1,6 +1,5 @@
 """Raylib Desktop GUI Application for Classical Density Functional Theory (FMT) Hard-Sphere Simulator."""
 
-import math
 import numpy as np
 import pyray as pr
 
@@ -37,7 +36,9 @@ class RaylibCDFTApp:
         self.alpha_used = 0.03
 
         # Instantiate functional engine from current selection
-        fmt_name = self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
+        fmt_name = (
+            self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
+        )
         self.func = functional_factory(fmt_name)
 
         # Physical system, grid, solver, and weighted density calculator init
@@ -45,23 +46,37 @@ class RaylibCDFTApp:
 
         # Raylib window initialization
         pr.set_config_flags(pr.FLAG_WINDOW_RESIZABLE | pr.FLAG_MSAA_4X_HINT)
-        pr.init_window(self.width, self.height, "Classical DFT (FMT) Physics Visualizer & Solver".encode("utf-8"))
+        pr.init_window(
+            self.width, self.height, b"Classical DFT (FMT) Physics Visualizer & Solver"
+        )
         pr.set_target_fps(60)
 
         # Plotter viewports
-        self.plotter_main = Plotter2D(360, 45, self.width - 375, 480, title="Density Profile rho(z)")
-        self.plotter_diag = Plotter2D(360, 535, self.width - 375, 175, title="Diagnostic Metrics & Contact Theorem")
+        self.plotter_main = Plotter2D(
+            360, 45, self.width - 375, 480, title="Density Profile rho(z)"
+        )
+        self.plotter_diag = Plotter2D(
+            360,
+            535,
+            self.width - 375,
+            175,
+            title="Diagnostic Metrics & Contact Theorem",
+        )
 
     def rebuild_system(self) -> None:
         """Reconstruct PhysicalParameters, Grid1D, RothPicardSolver, and initial density profile."""
         # Recreate functional from current selection
-        fmt_name = self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
+        fmt_name = (
+            self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
+        )
         self.func = functional_factory(fmt_name)
 
         self.params = PhysicalParameters(eta=self.eta)
         dz_clamped = min(0.010, max(0.001, self.dz))
         self.grid = Grid1D(params=self.params, Lz=self.Lz, dz=dz_clamped)
-        self.calc = WeightedDensityCalculator(self.grid, apply_endpoint_modification=True)
+        self.calc = WeightedDensityCalculator(
+            self.grid, apply_endpoint_modification=True
+        )
 
         w_left = 0.0
         w_right = self.Lz if self.geom_idx == 1 else None
@@ -76,7 +91,9 @@ class RaylibCDFTApp:
         )
 
         self.v_ext = self.grid.external_potential(wall_left=w_left, wall_right=w_right)
-        self.rho = self.grid.initial_density_profile(wall_left=w_left, wall_right=w_right)
+        self.rho = self.grid.initial_density_profile(
+            wall_left=w_left, wall_right=w_right
+        )
         self.rho_init = self.rho.copy()
 
         self.rho_prev = None
@@ -101,14 +118,63 @@ class RaylibCDFTApp:
 
         # Roth 2010 Fig 1a data points (eta = 0.4257)
         if abs(self.eta - 0.4257) < 0.01 and self.geom_idx == 0:
-            bm_z = np.array([0.50, 0.55, 0.65, 0.85, 1.05, 1.30, 1.55, 1.80, 2.10, 2.50, 3.00, 4.00, 5.00])
-            bm_y = np.array([2.52, 2.20, 1.45, 0.52, 0.48, 0.95, 1.25, 0.98, 0.75, 0.82, 0.81, 0.813, 0.813])
+            bm_z = np.array(
+                [
+                    0.50,
+                    0.55,
+                    0.65,
+                    0.85,
+                    1.05,
+                    1.30,
+                    1.55,
+                    1.80,
+                    2.10,
+                    2.50,
+                    3.00,
+                    4.00,
+                    5.00,
+                ]
+            )
+            bm_y = np.array(
+                [
+                    2.52,
+                    2.20,
+                    1.45,
+                    0.52,
+                    0.48,
+                    0.95,
+                    1.25,
+                    0.98,
+                    0.75,
+                    0.82,
+                    0.81,
+                    0.813,
+                    0.813,
+                ]
+            )
             return bm_z, bm_y
 
         # Roth 2010 Fig 1b data points (eta = 0.4783)
         if abs(self.eta - 0.4783) < 0.01 and self.geom_idx == 0:
-            bm_z = np.array([0.50, 0.55, 0.65, 0.85, 1.05, 1.30, 1.55, 1.80, 2.10, 2.50, 3.00, 4.00])
-            bm_y = np.array([3.45, 2.90, 1.70, 0.40, 0.35, 1.15, 1.62, 1.10, 0.70, 0.92, 0.91, 0.913])
+            bm_z = np.array(
+                [0.50, 0.55, 0.65, 0.85, 1.05, 1.30, 1.55, 1.80, 2.10, 2.50, 3.00, 4.00]
+            )
+            bm_y = np.array(
+                [
+                    3.45,
+                    2.90,
+                    1.70,
+                    0.40,
+                    0.35,
+                    1.15,
+                    1.62,
+                    1.10,
+                    0.70,
+                    0.92,
+                    0.91,
+                    0.913,
+                ]
+            )
             return bm_z, bm_y
 
         return None
@@ -119,8 +185,10 @@ class RaylibCDFTApp:
             return
 
         self.iteration += 1
-        rho_next, rho_target_cur, self.c1, self.residual, self.alpha_used = self.solver.solve_step_adaptive(
-            self.rho, self.rho_prev, self.rho_target_prev
+        rho_next, rho_target_cur, self.c1, self.residual, self.alpha_used = (
+            self.solver.solve_step_adaptive(
+                self.rho, self.rho_prev, self.rho_target_prev
+            )
         )
 
         self.rho_prev = self.rho.copy()
@@ -139,25 +207,53 @@ class RaylibCDFTApp:
     def render_sidebar(self) -> None:
         """Render controls, sliders, radio buttons, and diagnostic metrics panel."""
         sidebar_w = 340.0
-        UIWidgets.draw_panel(10, 45, sidebar_w, self.height - 55, title="FMT Physics & Problem Setup")
+        UIWidgets.draw_panel(
+            10, 45, sidebar_w, self.height - 55, title="FMT Physics & Problem Setup"
+        )
 
         curr_y = 75.0
 
         # 1. Parameter Sliders
-        new_eta = UIWidgets.slider(25, curr_y, 310, 35, "Bulk Packing Fraction (eta)", self.eta, 0.01, 0.50, fmt="{:.4f}")
+        new_eta = UIWidgets.slider(
+            25,
+            curr_y,
+            310,
+            35,
+            "Bulk Packing Fraction (eta)",
+            self.eta,
+            0.01,
+            0.50,
+            fmt="{:.4f}",
+        )
         curr_y += 42.0
 
         # Benchmark Preset Quick Buttons
         btn_w_half = 150.0
         tt_1a = "Set bulk packing fraction to eta=0.4257 (Roth 2010 Fig 1a)"
-        if UIWidgets.button(25, curr_y, btn_w_half, 22, "Preset: Fig 1a (0.4257)", bg_color=Theme.HEADER_BG, tooltip=tt_1a):
+        if UIWidgets.button(
+            25,
+            curr_y,
+            btn_w_half,
+            22,
+            "Preset: Fig 1a (0.4257)",
+            bg_color=Theme.HEADER_BG,
+            tooltip=tt_1a,
+        ):
             self.eta = 0.4257
             new_eta = 0.4257
             self.geom_idx = 0
             self.rebuild_system()
 
         tt_1b = "Set bulk packing fraction to eta=0.4783 (Roth 2010 Fig 1b)"
-        if UIWidgets.button(185, curr_y, btn_w_half, 22, "Preset: Fig 1b (0.4783)", bg_color=Theme.HEADER_BG, tooltip=tt_1b):
+        if UIWidgets.button(
+            185,
+            curr_y,
+            btn_w_half,
+            22,
+            "Preset: Fig 1b (0.4783)",
+            bg_color=Theme.HEADER_BG,
+            tooltip=tt_1b,
+        ):
             self.eta = 0.4783
             new_eta = 0.4783
             self.geom_idx = 0
@@ -165,14 +261,38 @@ class RaylibCDFTApp:
 
         curr_y += 28.0
 
-        new_Lz = UIWidgets.slider(25, curr_y, 310, 35, "Domain Length (Lz)", self.Lz, 2.0, 15.0, fmt="{:.2f} sigma")
+        new_Lz = UIWidgets.slider(
+            25,
+            curr_y,
+            310,
+            35,
+            "Domain Length (Lz)",
+            self.Lz,
+            2.0,
+            15.0,
+            fmt="{:.2f} sigma",
+        )
         curr_y += 42.0
 
-        new_dz = UIWidgets.slider(25, curr_y, 310, 35, "Grid Resolution (dz)", self.dz, 0.002, 0.010, fmt="{:.4f} sigma")
+        new_dz = UIWidgets.slider(
+            25,
+            curr_y,
+            310,
+            35,
+            "Grid Resolution (dz)",
+            self.dz,
+            0.002,
+            0.010,
+            fmt="{:.4f} sigma",
+        )
         curr_y += 45.0
 
         # Check parameter changes
-        if abs(new_eta - self.eta) > 1e-5 or abs(new_Lz - self.Lz) > 1e-5 or abs(new_dz - self.dz) > 1e-5:
+        if (
+            abs(new_eta - self.eta) > 1e-5
+            or abs(new_Lz - self.Lz) > 1e-5
+            or abs(new_dz - self.dz) > 1e-5
+        ):
             self.eta = new_eta
             self.Lz = new_Lz
             self.dz = new_dz
@@ -180,29 +300,60 @@ class RaylibCDFTApp:
 
         # 2. Viewport Mode Selection (Density vs Weighted Densities vs Free Energy)
         view_options = ["Density rho", "Weighted n", "Free Energy Phi"]
-        new_view, h_v = UIWidgets.radio_group(25, curr_y, 310, "Plot Viewport Mode:", view_options, self.view_mode_idx, cols=3)
+        new_view, h_v = UIWidgets.radio_group(
+            25,
+            curr_y,
+            310,
+            "Plot Viewport Mode:",
+            view_options,
+            self.view_mode_idx,
+            cols=3,
+        )
         curr_y += h_v + 6.0
         if new_view != self.view_mode_idx:
             self.view_mode_idx = new_view
             if self.view_mode_idx == 0:
                 self.plotter_main.title = "Density Profile rho(z)"
             elif self.view_mode_idx == 1:
-                self.plotter_main.title = "Spatial Weighted Densities n_alpha(z) (FFT Convolutions)"
+                self.plotter_main.title = (
+                    "Spatial Weighted Densities n_alpha(z) (FFT Convolutions)"
+                )
             else:
-                fmt_label = self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
-                self.plotter_main.title = f"Excess Free Energy Density Phi_{fmt_label}(z)"
+                fmt_label = (
+                    self.fmt_names[self.fmt_idx]
+                    if self.fmt_idx < len(self.fmt_names)
+                    else "RF"
+                )
+                self.plotter_main.title = (
+                    f"Excess Free Energy Density Phi_{fmt_label}(z)"
+                )
 
         # 3. Geometry Selection (2 columns)
         geom_options = ["Single Wall (z=0)", "Slit Pore"]
-        new_geom, h_g = UIWidgets.radio_group(25, curr_y, 310, "Geometry Mode:", geom_options, self.geom_idx, cols=2)
+        new_geom, h_g = UIWidgets.radio_group(
+            25, curr_y, 310, "Geometry Mode:", geom_options, self.geom_idx, cols=2
+        )
         curr_y += h_g + 6.0
         if new_geom != self.geom_idx:
             self.geom_idx = new_geom
             self.rebuild_system()
 
         # 4. FMT Functional Variant Selection (2 columns x 2 rows)
-        fmt_options = ["RF (Original)", "WB (White-Bear)", "WBII (Mark II)", "WB-Tensor"]
-        new_fmt, h_f = UIWidgets.radio_group(25, curr_y, 310, "FMT Functional Variant:", fmt_options, self.fmt_idx, cols=2)
+        fmt_options = [
+            "RF (Original)",
+            "WB (White-Bear)",
+            "WBII (Mark II)",
+            "WB-Tensor",
+        ]
+        new_fmt, h_f = UIWidgets.radio_group(
+            25,
+            curr_y,
+            310,
+            "FMT Functional Variant:",
+            fmt_options,
+            self.fmt_idx,
+            cols=2,
+        )
         curr_y += h_f + 8.0
         if new_fmt != self.fmt_idx:
             self.fmt_idx = new_fmt
@@ -213,23 +364,44 @@ class RaylibCDFTApp:
         btn_h = 28.0
 
         solve_label = "Pause Solver" if self.is_solving else "Solve (Roth Picard)"
-        if UIWidgets.button(25, curr_y, btn_w, btn_h, solve_label, bg_color=Theme.PRIMARY_BLUE):
+        if UIWidgets.button(
+            25, curr_y, btn_w, btn_h, solve_label, bg_color=Theme.PRIMARY_BLUE
+        ):
             self.is_solving = not self.is_solving
 
-        if UIWidgets.button(185, curr_y, btn_w, btn_h, "Reset Profile", bg_color=Theme.SLIDER_BG):
+        if UIWidgets.button(
+            185, curr_y, btn_w, btn_h, "Reset Profile", bg_color=Theme.SLIDER_BG
+        ):
             self.rebuild_system()
 
         curr_y += 32.0
 
-        bm_label = "Hide Benchmark Dots" if self.show_benchmark else "Show Benchmark Dots"
+        bm_label = (
+            "Hide Benchmark Dots" if self.show_benchmark else "Show Benchmark Dots"
+        )
         bm_tooltip = "Toggle Monte Carlo reference dots from Roth (2010) Fig. 1a (eta=0.4257) & Fig. 1b (eta=0.4783)"
-        if UIWidgets.button(25, curr_y, 310, btn_h, bm_label, bg_color=Theme.HEADER_BG, tooltip=bm_tooltip):
+        if UIWidgets.button(
+            25,
+            curr_y,
+            310,
+            btn_h,
+            bm_label,
+            bg_color=Theme.HEADER_BG,
+            tooltip=bm_tooltip,
+        ):
             self.show_benchmark = not self.show_benchmark
 
         curr_y += 34.0
 
         # 6. Physics Info Card & Physical Feasibility Badge
-        UIWidgets.draw_panel(25, curr_y, 310, 240, title="System Thermodynamics & Info", bg_color=Theme.BG_DARK)
+        UIWidgets.draw_panel(
+            25,
+            curr_y,
+            310,
+            240,
+            title="System Thermodynamics & Info",
+            bg_color=Theme.BG_DARK,
+        )
         info_y = curr_y + 28
 
         max_n3 = self.wd.max_n3
@@ -243,33 +415,56 @@ class RaylibCDFTApp:
             badge_color = Theme.DANGER_RED
             status_n3 = f"OVER-PACKED ({max_n3:.4f})"
 
-        fmt_label = self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
+        fmt_label = (
+            self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
+        )
         p_bulk = self.func.compute_bulk_pressure(self.eta, self.params.sigma)
 
         # Compute live sum-rule diagnostics
         rho_c = SumRuleDiagnostics.extrapolate_contact_density(self.grid, self.rho)
-        gamma_sp = SumRuleDiagnostics.compute_surface_tension(self.grid, self.rho, self.func, self.calc)
-        gamma_bulk = SumRuleDiagnostics.compute_bulk_route_surface_tension(self.func, self.eta, self.params.sigma)
+        gamma_sp = SumRuleDiagnostics.compute_surface_tension(
+            self.grid, self.rho, self.func, self.calc
+        )
+        gamma_bulk = SumRuleDiagnostics.compute_bulk_route_surface_tension(
+            self.func, self.eta, self.params.sigma
+        )
         gamma_ex = SumRuleDiagnostics.compute_excess_adsorption(self.grid, self.rho)
         err_contact = abs(rho_c - p_bulk) / p_bulk * 100.0
 
         info_lines = [
             (f"Active Functional  : {fmt_label}", Theme.PRIMARY_BLUE),
-            (f"Sphere Radius (R)  : {self.params.radius:.4f} sigma", Theme.TEXT_PRIMARY),
+            (
+                f"Sphere Radius (R)  : {self.params.radius:.4f} sigma",
+                Theme.TEXT_PRIMARY,
+            ),
             (f"Bulk Density (rho) : {self.params.rho_bulk:.6f}", Theme.TEXT_PRIMARY),
             (f"Bulk Pressure (bp) : {p_bulk:.4f}", Theme.TEXT_PRIMARY),
-            (f"Contact rho(R+)    : {rho_c:.4f} ({err_contact:.2f}% err)", Theme.SUCCESS_GREEN if err_contact < 0.1 else Theme.TEXT_PRIMARY),
-            (f"Surface Tension bg : {gamma_sp:.4f} (bulk: {gamma_bulk:.4f})", Theme.TEXT_PRIMARY),
+            (
+                f"Contact rho(R+)    : {rho_c:.4f} ({err_contact:.2f}% err)",
+                Theme.SUCCESS_GREEN if err_contact < 0.1 else Theme.TEXT_PRIMARY,
+            ),
+            (
+                f"Surface Tension bg : {gamma_sp:.4f} (bulk: {gamma_bulk:.4f})",
+                Theme.TEXT_PRIMARY,
+            ),
             (f"Excess Adsorption G: {gamma_ex:.4f}", Theme.TEXT_PRIMARY),
             (f"Solver Iter (k)    : {self.iteration}", Theme.TEXT_PRIMARY),
             (f"Alpha Opt (alpha)  : {self.alpha_used:.4f}", Theme.PRIMARY_BLUE),
-            (f"Residual Norm (R)  : {self.residual:.2e}", Theme.WARNING_AMBER if self.is_solving else Theme.TEXT_PRIMARY),
+            (
+                f"Residual Norm (R)  : {self.residual:.2e}",
+                Theme.WARNING_AMBER if self.is_solving else Theme.TEXT_PRIMARY,
+            ),
             (f"Max Packing (n3)   : {status_n3}", badge_color),
-            (f"Status             : {'Solving (Roth Picard)...' if self.is_solving else ('CONVERGED' if self.residual > 0 and self.residual < 1e-6 else 'Ready / Idle')}", Theme.SUCCESS_GREEN if (self.is_solving or self.residual < 1e-6) else Theme.TEXT_PRIMARY),
+            (
+                f"Status             : {'Solving (Roth Picard)...' if self.is_solving else ('CONVERGED' if self.residual > 0 and self.residual < 1e-6 else 'Ready / Idle')}",
+                Theme.SUCCESS_GREEN
+                if (self.is_solving or self.residual < 1e-6)
+                else Theme.TEXT_PRIMARY,
+            ),
         ]
 
         for line, color in info_lines:
-            pr.draw_text(line.encode("utf-8"), int(38), int(info_y), 11, color)
+            pr.draw_text(line.encode("utf-8"), 38, int(info_y), 11, color)
             info_y += 18
 
     def run(self) -> None:
@@ -279,8 +474,20 @@ class RaylibCDFTApp:
             if pr.is_window_resized():
                 self.width = pr.get_screen_width()
                 self.height = pr.get_screen_height()
-                self.plotter_main = Plotter2D(360, 45, max(400, self.width - 375), max(200, self.height - 240), title="Density Profile rho(z)")
-                self.plotter_diag = Plotter2D(360, self.height - 180, max(400, self.width - 375), 170, title="Diagnostic Metrics & Contact Theorem")
+                self.plotter_main = Plotter2D(
+                    360,
+                    45,
+                    max(400, self.width - 375),
+                    max(200, self.height - 240),
+                    title="Density Profile rho(z)",
+                )
+                self.plotter_diag = Plotter2D(
+                    360,
+                    self.height - 180,
+                    max(400, self.width - 375),
+                    170,
+                    title="Diagnostic Metrics & Contact Theorem",
+                )
 
             # Update solver step if active
             self.run_solver_step()
@@ -293,7 +500,13 @@ class RaylibCDFTApp:
             header_rect = pr.Rectangle(0, 0, self.width, 36)
             pr.draw_rectangle_rec(header_rect, Theme.HEADER_BG)
             pr.draw_rectangle_lines_ex(header_rect, 1.0, Theme.PANEL_BORDER)
-            pr.draw_text("Classical Density Functional Theory (FMT) - Raylib Interactive Solver".encode("utf-8"), 15, 9, 16, Theme.TEXT_PRIMARY)
+            pr.draw_text(
+                b"Classical Density Functional Theory (FMT) - Raylib Interactive Solver",
+                15,
+                9,
+                16,
+                Theme.TEXT_PRIMARY,
+            )
 
             # Render UI sidebar
             self.render_sidebar()

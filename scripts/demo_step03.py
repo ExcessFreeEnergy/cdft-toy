@@ -1,6 +1,7 @@
 """Demonstration script for Step 03: Weighted Density Calculator & Physical Assertions."""
 
 import numpy as np
+
 from src.grid import Grid1D, PhysicalParameters
 from src.weighted_densities import WeightedDensityCalculator
 
@@ -43,9 +44,13 @@ def main():
     wd_overpacked = calc.compute(rho_overpacked)
 
     print(f"   Overpacked max_n3          : {wd_overpacked.max_n3:.6f}")
-    print(f"   Physical Feasible (n3 < 1) : {wd_overpacked.is_feasible} (Correctly flags divergence risk)")
+    print(
+        f"   Physical Feasible (n3 < 1) : {wd_overpacked.is_feasible} (Correctly flags divergence risk)"
+    )
 
-    print("\nStep 03 Weighted Density Calculator & Safety Assertions fully functioning!")
+    print(
+        "\nStep 03 Weighted Density Calculator & Safety Assertions fully functioning!"
+    )
     print("=" * 75)
 
 

@@ -1,7 +1,6 @@
 """Unit tests for FixedPicardSolver and one-body direct correlation function c^(1)(z) (Step 05)."""
 
 import numpy as np
-import pytest
 
 from src.grid import Grid1D, PhysicalParameters
 from src.solvers.picard import FixedPicardSolver

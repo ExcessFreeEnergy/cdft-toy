@@ -1,6 +1,7 @@
 """Unit tests for FFTConvolver1D (Step 02)."""
 
 import math
+
 import numpy as np
 import pytest
 

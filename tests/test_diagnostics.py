@@ -2,9 +2,6 @@
 
 import math
 
-import numpy as np
-import pytest
-
 from src.diagnostics import SumRuleDiagnostics
 from src.functionals import functional_factory
 from src.grid import Grid1D, PhysicalParameters
@@ -22,7 +19,9 @@ def test_contact_theorem_convergence():
 
     assert res.converged
 
-    rho_c, p_bulk, err_rel, passed = SumRuleDiagnostics.verify_contact_theorem(grid, res.rho, functional, tol_rel=0.01)
+    rho_c, p_bulk, err_rel, passed = SumRuleDiagnostics.verify_contact_theorem(
+        grid, res.rho, functional, tol_rel=0.01
+    )
     assert passed
     assert err_rel < 0.01  # < 1.0% relative error for dz=0.002
     assert math.isclose(rho_c, p_bulk, rel_tol=0.01)
@@ -38,8 +37,12 @@ def test_surface_tension_and_bulk_route():
     res = solver.solve(max_iter=2000, tol=1e-7)
     assert res.converged
 
-    gamma_spatial = SumRuleDiagnostics.compute_surface_tension(grid, res.rho, functional)
-    gamma_bulk_route = SumRuleDiagnostics.compute_bulk_route_surface_tension(functional, eta=0.30, sigma=1.0)
+    gamma_spatial = SumRuleDiagnostics.compute_surface_tension(
+        grid, res.rho, functional
+    )
+    gamma_bulk_route = SumRuleDiagnostics.compute_bulk_route_surface_tension(
+        functional, eta=0.30, sigma=1.0
+    )
 
     assert isinstance(gamma_spatial, float)
     assert isinstance(gamma_bulk_route, float)
@@ -56,7 +59,9 @@ def test_gibbs_adsorption_sum_rule():
         grid, functional, eta=0.30, delta_eta=0.005
     )
 
-    assert math.isclose(minus_dgamma_dmu, gamma_ex, rel_tol=0.10)  # Agree to within 10% for numerical finite-difference
+    assert math.isclose(
+        minus_dgamma_dmu, gamma_ex, rel_tol=0.10
+    )  # Agree to within 10% for numerical finite-difference
     assert err_rel < 0.10
 
 

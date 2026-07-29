@@ -1,6 +1,7 @@
 """Demonstration script for Step 01: Physical Parameters, 1D Spatial Grid, and Hard Wall Potential."""
 
 import numpy as np
+
 from src.grid import Grid1D, PhysicalParameters
 
 
@@ -21,8 +22,12 @@ def main():
     print(f"   Sphere Radius (R)        : {params1.radius:.4f}")
     print(f"   Sphere Volume (V_sphere) : {params1.volume:.6f}")
     print("-" * 50)
-    print(f"   Benchmark 1 (Roth Fig 1a) -> eta = {params1.eta:.4f} => rho_bulk = {params1.rho_bulk:.6f}")
-    print(f"   Benchmark 2 (Roth Fig 1b) -> eta = {params2.eta:.4f} => rho_bulk = {params2.rho_bulk:.6f}")
+    print(
+        f"   Benchmark 1 (Roth Fig 1a) -> eta = {params1.eta:.4f} => rho_bulk = {params1.rho_bulk:.6f}"
+    )
+    print(
+        f"   Benchmark 2 (Roth Fig 1b) -> eta = {params2.eta:.4f} => rho_bulk = {params2.rho_bulk:.6f}"
+    )
 
     # 2. Domain Discretization & Grid Setup
     Lz = 10.0  # 10 * sigma
@@ -48,7 +53,7 @@ def main():
     # Pick sample indices around the hard wall boundary z = R = 0.5
     sample_z = [0.0, 0.25, 0.49, 0.495, 0.50, 0.505, 0.51, 1.0, 2.0, 5.0]
     for z_val in sample_z:
-        idx = int(round(z_val / grid.dz))
+        idx = round(z_val / grid.dz)
         z_actual = grid.z[idx]
         v_val = v_ext[idx]
         rho_val = rho_init[idx]

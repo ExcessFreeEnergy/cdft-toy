@@ -2,7 +2,6 @@
 
 import math
 from dataclasses import dataclass
-from typing import Dict
 
 import numpy as np
 
@@ -30,7 +29,7 @@ class WeightedDensities:
     n3: np.ndarray
     v1: np.ndarray
     v2: np.ndarray
-    n_m2: Optional[np.ndarray] = None
+    n_m2: np.ndarray | None = None
 
     @property
     def max_n3(self) -> float:
@@ -47,7 +46,7 @@ class WeightedDensities:
         """Boolean indicator whether local packing fraction satisfies n_3(z) < 1.0."""
         return self.max_n3 < (1.0 - 1e-12)
 
-    def to_dict(self) -> Dict[str, np.ndarray]:
+    def to_dict(self) -> dict[str, np.ndarray]:
         """Return dictionary mapping weight name to array."""
         res = {
             "n0": self.n0,
@@ -72,7 +71,9 @@ class WeightedDensityCalculator:
 
     def __init__(self, grid: Grid1D, apply_endpoint_modification: bool = True) -> None:
         self.grid = grid
-        self.convolver = FFTConvolver1D(grid, apply_endpoint_modification=apply_endpoint_modification)
+        self.convolver = FFTConvolver1D(
+            grid, apply_endpoint_modification=apply_endpoint_modification
+        )
 
     def compute(self, rho: np.ndarray) -> WeightedDensities:
         """Compute spatial weighted densities for a density profile rho(z).
@@ -94,7 +95,7 @@ class WeightedDensityCalculator:
             n_m2=raw_dict.get("n_m2"),
         )
 
-    def validate_bulk_spt(self, eta: float) -> Dict[str, float]:
+    def validate_bulk_spt(self, eta: float) -> dict[str, float]:
         """Compute Scaled Particle Theory (SPT) bulk reference values and relative error metrics.
 
         Args:

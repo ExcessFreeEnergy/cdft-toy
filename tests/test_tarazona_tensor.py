@@ -3,13 +3,12 @@
 import math
 
 import numpy as np
-import pytest
 
 from src.functionals import functional_factory
 from src.functionals.tarazona_tensor import WhiteBearTensorFunctional
 from src.grid import Grid1D, PhysicalParameters
 from src.solvers import RothPicardSolver
-from src.weighted_densities import WeightedDensities, WeightedDensityCalculator
+from src.weighted_densities import WeightedDensities
 from src.weights import PlanarWeights
 
 
@@ -28,7 +27,7 @@ def test_w_m2_analytical_integral():
 def test_w_m2_parity_even():
     """Verify w_m2 is an even function under z -> -z."""
     pw = PlanarWeights(radius=0.5)
-    z_w, weights = pw.get_grid_and_weights(dz=0.005, apply_endpoint_modification=False)
+    _z_w, weights = pw.get_grid_and_weights(dz=0.005, apply_endpoint_modification=False)
     w_m2 = weights["n_m2"]
 
     # Check w_m2(z) == w_m2(-z)
@@ -137,7 +136,9 @@ def test_wb_tensor_solver_convergence_tight_confinement():
     params = PhysicalParameters(eta=0.35)
     grid = Grid1D(params=params, Lz=2.0, dz=0.005)
 
-    solver = RothPicardSolver(grid, functional="WB-TENSOR", alpha_init=0.03, wall_left=0.0, wall_right=2.0)
+    solver = RothPicardSolver(
+        grid, functional="WB-TENSOR", alpha_init=0.03, wall_left=0.0, wall_right=2.0
+    )
     res = solver.solve(max_iter=1000, tol=1e-6)
 
     assert res.converged

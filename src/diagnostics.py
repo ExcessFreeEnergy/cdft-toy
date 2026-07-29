@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Optional, Tuple
 
 import numpy as np
 
@@ -28,15 +27,17 @@ class SumRuleResult:
     surface_tension_spatial: float
     surface_tension_bulk_route: float
     excess_adsorption: float
-    gibbs_dgamma_dmu: Optional[float] = None
-    gibbs_error_rel: Optional[float] = None
+    gibbs_dgamma_dmu: float | None = None
+    gibbs_error_rel: float | None = None
 
 
 class SumRuleDiagnostics:
     """Thermodynamic observables and sum-rule validation engine (Roth Sec. 5.1)."""
 
     @staticmethod
-    def extrapolate_contact_density(grid: Grid1D, rho: np.ndarray, wall_position: float = 0.0) -> float:
+    def extrapolate_contact_density(
+        grid: Grid1D, rho: np.ndarray, wall_position: float = 0.0
+    ) -> float:
         """Extrapolate density profile to wall contact z = wall_position + R using 3-point fit.
 
         Args:
@@ -68,8 +69,12 @@ class SumRuleDiagnostics:
 
     @classmethod
     def verify_contact_theorem(
-        self, grid: Grid1D, rho: np.ndarray, functional: FMTFunctional, tol_rel: float = 0.03
-    ) -> Tuple[float, float, float, bool]:
+        self,
+        grid: Grid1D,
+        rho: np.ndarray,
+        functional: FMTFunctional,
+        tol_rel: float = 0.03,
+    ) -> tuple[float, float, float, bool]:
         """Verify contact theorem sum-rule: rho(z = R+) == beta * P_bulk (Roth Eq. 26).
 
         Args:
@@ -82,13 +87,17 @@ class SumRuleDiagnostics:
             Tuple of (rho_contact, p_bulk, rel_error, passed_boolean).
         """
         rho_contact = self.extrapolate_contact_density(grid, rho)
-        p_bulk = functional.compute_bulk_pressure(grid.params.eta, sigma=grid.params.sigma)
+        p_bulk = functional.compute_bulk_pressure(
+            grid.params.eta, sigma=grid.params.sigma
+        )
         err_rel = float(abs(rho_contact - p_bulk) / p_bulk)
         passed = err_rel <= tol_rel
         return rho_contact, p_bulk, err_rel, passed
 
     @staticmethod
-    def compute_bulk_route_surface_tension(functional: FMTFunctional, eta: float, sigma: float = 1.0) -> float:
+    def compute_bulk_route_surface_tension(
+        functional: FMTFunctional, eta: float, sigma: float = 1.0
+    ) -> float:
         """Compute analytical bulk-route wall surface tension beta * gamma_bulk = (dPhi/dn2)_bulk (Roth Eq. 447).
 
         Args:
@@ -122,7 +131,11 @@ class SumRuleDiagnostics:
 
     @classmethod
     def compute_surface_tension(
-        self, grid: Grid1D, rho: np.ndarray, functional: FMTFunctional, calc: Optional[WeightedDensityCalculator] = None
+        self,
+        grid: Grid1D,
+        rho: np.ndarray,
+        functional: FMTFunctional,
+        calc: WeightedDensityCalculator | None = None,
     ) -> float:
         """Compute wall surface tension beta * gamma via spatial grand-potential integration (Roth Eq. 28).
 
@@ -183,8 +196,12 @@ class SumRuleDiagnostics:
 
     @classmethod
     def verify_gibbs_adsorption(
-        self, grid: Grid1D, functional: FMTFunctional, eta: float, delta_eta: float = 0.005
-    ) -> Tuple[float, float, float]:
+        self,
+        grid: Grid1D,
+        functional: FMTFunctional,
+        eta: float,
+        delta_eta: float = 0.005,
+    ) -> tuple[float, float, float]:
         """Verify Gibbs adsorption theorem: Gamma == -d(gamma)/d(mu) (Roth Eq. 27).
 
         Args:
@@ -198,7 +215,9 @@ class SumRuleDiagnostics:
         """
         from src.solvers import RothPicardSolver
 
-        def _solve_and_get_gamma_mu(e: float) -> Tuple[float, float, float, Grid1D, np.ndarray]:
+        def _solve_and_get_gamma_mu(
+            e: float,
+        ) -> tuple[float, float, float, Grid1D, np.ndarray]:
             p = grid.params.__class__(eta=e)
             g = grid.__class__(params=p, Lz=grid.Lz, dz=grid.dz)
             solver = RothPicardSolver(g, functional=functional, alpha_init=0.03)
@@ -210,17 +229,23 @@ class SumRuleDiagnostics:
             gamma_ex = self.compute_excess_adsorption(g, res.rho)
             return gamma, mu_tot, gamma_ex, g, res.rho
 
-        gamma_mid, mu_mid, gamma_ex_mid, _, _ = _solve_and_get_gamma_mu(eta)
+        _gamma_mid, _mu_mid, gamma_ex_mid, _, _ = _solve_and_get_gamma_mu(eta)
         gamma_p, mu_p, _, _, _ = _solve_and_get_gamma_mu(eta + delta_eta)
         gamma_m, mu_m, _, _, _ = _solve_and_get_gamma_mu(eta - delta_eta)
 
         minus_dgamma_dmu = -(gamma_p - gamma_m) / (mu_p - mu_m)
-        err_rel = float(abs(minus_dgamma_dmu - gamma_ex_mid) / max(1e-10, abs(gamma_ex_mid)))
+        err_rel = float(
+            abs(minus_dgamma_dmu - gamma_ex_mid) / max(1e-10, abs(gamma_ex_mid))
+        )
         return minus_dgamma_dmu, gamma_ex_mid, err_rel
 
     @classmethod
     def evaluate_all(
-        self, grid: Grid1D, rho: np.ndarray, functional: FMTFunctional, calc: Optional[WeightedDensityCalculator] = None
+        self,
+        grid: Grid1D,
+        rho: np.ndarray,
+        functional: FMTFunctional,
+        calc: WeightedDensityCalculator | None = None,
     ) -> SumRuleResult:
         """Execute full suite of thermodynamic sum-rule diagnostics.
 
@@ -233,9 +258,13 @@ class SumRuleDiagnostics:
         Returns:
             SumRuleResult dataclass containing all metrics.
         """
-        rho_c, p_bulk, err_c, passed_c = self.verify_contact_theorem(grid, rho, functional)
+        rho_c, p_bulk, err_c, passed_c = self.verify_contact_theorem(
+            grid, rho, functional
+        )
         gamma_spatial = self.compute_surface_tension(grid, rho, functional, calc=calc)
-        gamma_bulk = self.compute_bulk_route_surface_tension(functional, grid.params.eta, sigma=grid.params.sigma)
+        gamma_bulk = self.compute_bulk_route_surface_tension(
+            functional, grid.params.eta, sigma=grid.params.sigma
+        )
         gamma_excess = self.compute_excess_adsorption(grid, rho)
 
         return SumRuleResult(

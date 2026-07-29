@@ -1,7 +1,6 @@
 """Roth's adaptive line-search Picard solver for Classical Density Functional Theory."""
 
 import math
-from typing import Optional, Tuple, Union
 
 import numpy as np
 
@@ -30,13 +29,13 @@ class RothPicardSolver(DFTSolver):
     def __init__(
         self,
         grid: Grid1D,
-        functional: Optional[Union[str, FMTFunctional]] = None,
-        functional_name: Optional[str] = None,
+        functional: str | FMTFunctional | None = None,
+        functional_name: str | None = None,
         alpha_init: float = 0.03,
         alpha_min: float = 0.001,
         alpha_max: float = 0.10,
-        wall_left: Optional[float] = 0.0,
-        wall_right: Optional[float] = None,
+        wall_left: float | None = 0.0,
+        wall_right: float | None = None,
     ) -> None:
         from src.functionals import RosenfeldFunctional, functional_factory
 
@@ -66,7 +65,6 @@ class RothPicardSolver(DFTSolver):
 
     def compute_c1_bulk(self) -> float:
         """Compute exact theoretical bulk direct correlation scalar c1_bulk."""
-        eta = self.grid.params.eta
         rho_bulk = self.grid.params.rho_bulk
         R = self.grid.params.radius
 
@@ -88,20 +86,24 @@ class RothPicardSolver(DFTSolver):
         c1_bulk = -(d0 * 1.0 + d1 * R + d2 * s_sphere + d3 * v_sphere)
         return float(c1_bulk)
 
-    def compute_c1(self, rho: np.ndarray) -> Tuple[np.ndarray, float]:
+    def compute_c1(self, rho: np.ndarray) -> tuple[np.ndarray, float]:
         """Compute spatial one-body direct correlation function c^(1)(z) and bulk correlation c1_bulk."""
         wd = self.calc.compute(rho)
         df_dn_dict = self.functional.evaluate_derivatives(wd)
-        c1_conv_dict = self.convolver.compute_direct_correlation_convolutions(df_dn_dict)
+        c1_conv_dict = self.convolver.compute_direct_correlation_convolutions(
+            df_dn_dict
+        )
 
         # Sum convolution components: c^(1)(z) = - sum_alpha conv_alpha(z)
         c1 = np.zeros_like(self.grid.z, dtype=float)
-        for key, conv_arr in c1_conv_dict.items():
+        for conv_arr in c1_conv_dict.values():
             c1 -= conv_arr
 
         return c1, self.c1_bulk
 
-    def compute_alpha_opt(self, delta_rho_in: np.ndarray, delta_rho_out: np.ndarray) -> float:
+    def compute_alpha_opt(
+        self, delta_rho_in: np.ndarray, delta_rho_out: np.ndarray
+    ) -> float:
         """Compute Roth's optimal line-search mixing parameter alpha_opt (Roth Eq. 29).
 
         Formula:
@@ -122,8 +124,8 @@ class RothPicardSolver(DFTSolver):
     def solve_step(
         self,
         rho_current: np.ndarray,
-        alpha: Optional[float] = None,
-    ) -> Tuple[np.ndarray, np.ndarray, float]:
+        alpha: float | None = None,
+    ) -> tuple[np.ndarray, np.ndarray, float]:
         """Fixed-step fallback implementation of solve_step for DFTSolver interface compliance."""
         mix_alpha = alpha if alpha is not None else self.alpha_init
         c1, c1_bulk = self.compute_c1(rho_current)
@@ -143,9 +145,9 @@ class RothPicardSolver(DFTSolver):
     def solve_step_adaptive(
         self,
         rho_current: np.ndarray,
-        rho_prev: Optional[np.ndarray] = None,
-        rho_target_prev: Optional[np.ndarray] = None,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float, float]:
+        rho_prev: np.ndarray | None = None,
+        rho_target_prev: np.ndarray | None = None,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, float, float]:
         """Execute a single adaptive Roth line-search Picard step.
 
         Returns:
@@ -184,10 +186,10 @@ class RothPicardSolver(DFTSolver):
 
     def solve(
         self,
-        rho_init: Optional[np.ndarray] = None,
+        rho_init: np.ndarray | None = None,
         max_iter: int = 2000,
         tol: float = 1e-7,
-        alpha: Optional[float] = None,
+        alpha: float | None = None,
     ) -> SolverResult:
         """Execute adaptive line-search relaxation solver until convergence or max_iter."""
         if rho_init is None:
@@ -204,8 +206,8 @@ class RothPicardSolver(DFTSolver):
         converged = False
 
         for k in range(1, max_iter + 1):
-            rho_next, rho_target_cur, c1_last, res, alpha_used = self.solve_step_adaptive(
-                rho_current, rho_prev, rho_target_prev
+            rho_next, rho_target_cur, c1_last, res, _alpha_used = (
+                self.solve_step_adaptive(rho_current, rho_prev, rho_target_prev)
             )
 
             history_residual.append(res)
