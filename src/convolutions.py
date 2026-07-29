@@ -50,16 +50,14 @@ class FFTConvolver1D:
         fft_f = fft.fft(padded_f, n=self.N_fft)
         fft_w = self.fft_weights[key]
 
-        # Invert sign if parity flip requested (for odd vector weights during c^(1) derivatives)
         if parity_flip:
             fft_w = -fft_w
 
         conv_full = np.real(fft.ifft(fft_f * fft_w)) * self.grid.dz
-        # Extract slice corresponding to spatial grid z
         return conv_full[: self.N_grid]
 
     def compute_weighted_densities(self, rho: np.ndarray) -> Dict[str, np.ndarray]:
-        """Compute all 6 spatial weighted densities n_0(z), n_1(z), n_2(z), n_3(z), v_1(z), v_2(z).
+        """Compute all 6 spatial weighted densities n_0, n_1, n_2, n_3, v_1, v_2 in a single FFT forward pass.
 
         Args:
             rho: 1D spatial density profile array matching grid.z.
@@ -67,9 +65,18 @@ class FFTConvolver1D:
         Returns:
             Dictionary mapping weight key to 1D weighted density array.
         """
+        # Optimize: compute forward FFT of padded density profile ONCE instead of 6 times
+        padded_rho = np.zeros(self.N_fft, dtype=float)
+        padded_rho[: self.N_grid] = rho
+        fft_rho = fft.fft(padded_rho, n=self.N_fft)
+
         result: Dict[str, np.ndarray] = {}
-        for key in self.weights_dict:
-            result[key] = self._convolve_raw(rho, key, parity_flip=False)
+        dz = self.grid.dz
+
+        for key, fft_w in self.fft_weights.items():
+            conv_full = np.real(fft.ifft(fft_rho * fft_w)) * dz
+            result[key] = conv_full[: self.N_grid]
+
         return result
 
     def compute_direct_correlation_convolutions(
