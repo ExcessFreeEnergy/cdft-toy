@@ -1,5 +1,15 @@
 """Classical Density Functional Theory (FMT) package."""
 
+from src.convolutions import FFTConvolver1D
 from src.grid import Grid1D, PhysicalParameters
+from src.weighted_densities import WeightedDensities, WeightedDensityCalculator
+from src.weights import PlanarWeights
 
-__all__ = ["Grid1D", "PhysicalParameters"]
+__all__ = [
+    "Grid1D",
+    "PhysicalParameters",
+    "PlanarWeights",
+    "FFTConvolver1D",
+    "WeightedDensities",
+    "WeightedDensityCalculator",
+]

@@ -4,11 +4,11 @@ import math
 import numpy as np
 import pyray as pr
 
-from src.convolutions import FFTConvolver1D
 from src.grid import Grid1D, PhysicalParameters
 from src.ui.plotter import Plotter2D
 from src.ui.theme import Theme
 from src.ui.widgets import UIWidgets
+from src.weighted_densities import WeightedDensityCalculator
 
 
 class RaylibCDFTApp:
@@ -30,7 +30,7 @@ class RaylibCDFTApp:
         self.show_benchmark = True
         self.iteration = 0
 
-        # Physical system, grid, and FFT convolver init
+        # Physical system, grid, and weighted density calculator init
         self.rebuild_system()
 
         # Raylib window initialization
@@ -43,11 +43,11 @@ class RaylibCDFTApp:
         self.plotter_diag = Plotter2D(360, 535, self.width - 375, 175, title="Diagnostic Metrics & Contact Theorem")
 
     def rebuild_system(self) -> None:
-        """Reconstruct PhysicalParameters, Grid1D, FFTConvolver1D, and initial density profile."""
+        """Reconstruct PhysicalParameters, Grid1D, WeightedDensityCalculator, and initial density profile."""
         self.params = PhysicalParameters(eta=self.eta)
         dz_clamped = min(0.010, max(0.001, self.dz))
         self.grid = Grid1D(params=self.params, Lz=self.Lz, dz=dz_clamped)
-        self.convolver = FFTConvolver1D(self.grid, apply_endpoint_modification=True)
+        self.calc = WeightedDensityCalculator(self.grid, apply_endpoint_modification=True)
 
         w_left = 0.0
         w_right = self.Lz if self.geom_idx == 1 else None
@@ -57,8 +57,9 @@ class RaylibCDFTApp:
         self.rho_init = self.rho.copy()
         self.iteration = 0
 
-        # Compute initial weighted densities via FFT convolution
-        self.n_dict = self.convolver.compute_weighted_densities(self.rho)
+        # Compute initial weighted densities via WeightedDensityCalculator
+        self.wd = self.calc.compute(self.rho)
+        self.n_dict = self.wd.to_dict()
 
     def get_benchmark_points(self):
         """Return benchmark Monte Carlo data points from Roth (2010) Fig. 1 for comparison."""
@@ -98,8 +99,9 @@ class RaylibCDFTApp:
         alpha = min(1.0, 0.02 * self.iteration)
         self.rho[acc] = (1.0 - alpha) * self.rho[acc] + alpha * target_rho
 
-        # Recompute spatial weighted densities via FFT convolutions
-        self.n_dict = self.convolver.compute_weighted_densities(self.rho)
+        # Recompute spatial weighted densities via WeightedDensityCalculator
+        self.wd = self.calc.compute(self.rho)
+        self.n_dict = self.wd.to_dict()
 
         if self.iteration >= 50:
             self.is_solving = False
@@ -174,21 +176,31 @@ class RaylibCDFTApp:
 
         curr_y += 40.0
 
-        # 6. Physics Info Card
+        # 6. Physics Info Card & Physical Feasibility Badge
         UIWidgets.draw_panel(25, curr_y, 310, 160, title="System Thermodynamics & Info", bg_color=Theme.BG_DARK)
         info_y = curr_y + 32
 
+        max_n3 = self.wd.max_n3
+        if max_n3 < 0.90:
+            badge_color = Theme.SUCCESS_GREEN
+            status_n3 = f"Safe ({max_n3:.4f})"
+        elif max_n3 < 1.0:
+            badge_color = Theme.WARNING_AMBER
+            status_n3 = f"Dense ({max_n3:.4f})"
+        else:
+            badge_color = Theme.DANGER_RED
+            status_n3 = f"OVER-PACKED ({max_n3:.4f})"
+
         info_lines = [
-            f"Sphere Radius (R)  : {self.params.radius:.4f} sigma",
-            f"Bulk Density (rho) : {self.params.rho_bulk:.6f}",
-            f"Grid Spacing (dz)  : {self.grid.dz:.4f} sigma",
-            f"Grid Points (N)    : {self.grid.num_points}",
-            f"Contact Density    : {self.rho[self.grid.z >= self.params.radius][0]:.4f}",
-            f"Status             : {'Solving...' if self.is_solving else 'Ready / Idle'}",
+            (f"Sphere Radius (R)  : {self.params.radius:.4f} sigma", Theme.TEXT_PRIMARY),
+            (f"Bulk Density (rho) : {self.params.rho_bulk:.6f}", Theme.TEXT_PRIMARY),
+            (f"Grid Spacing (dz)  : {self.grid.dz:.4f} sigma", Theme.TEXT_PRIMARY),
+            (f"Max Packing (n3)   : {status_n3}", badge_color),
+            (f"Feasible (n3 < 1)  : {'YES' if self.wd.is_feasible else 'NO (Divergent)'}", badge_color),
+            (f"Status             : {'Solving...' if self.is_solving else 'Ready / Idle'}", Theme.SUCCESS_GREEN if self.is_solving else Theme.TEXT_PRIMARY),
         ]
 
-        for line in info_lines:
-            color = Theme.SUCCESS_GREEN if "Status" in line and self.is_solving else Theme.TEXT_PRIMARY
+        for line, color in info_lines:
             pr.draw_text(line.encode("utf-8"), int(38), int(info_y), 12, color)
             info_y += 20
 
@@ -240,9 +252,9 @@ class RaylibCDFTApp:
                 )
             else:
                 # Spatial Weighted Densities View (FFT Convolutions)
-                n3_arr = self.n_dict["n3"]
-                n2_arr = self.n_dict["n2"]
-                v2_arr = self.n_dict["v2"]
+                n3_arr = self.wd.n3
+                n2_arr = self.wd.n2
+                v2_arr = self.wd.v2
 
                 y_max_plot = max(1.0, np.max(n2_arr) * 1.1)
                 sec_curves = [
