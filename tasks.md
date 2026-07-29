@@ -93,14 +93,14 @@
 ---
 
 ## Step 08: Tarazona Tensorial Weights & Tensorial FMT Engine
-- [ ] **Objective**: Implement tensorial weight function $\omega_{m2}$ and exact 1D planar Tarazona tensor functional.
-- [ ] **Details**:
+- [x] **Objective**: Implement tensorial weight function $\omega_{m2}$ and exact 1D planar Tarazona tensor functional.
+- [x] **Details**:
   - Implement 1D planar scalar component of tensorial weight function $\omega_{m2}(z) = (\frac{z^2}{R^2} - \frac{1}{3})\omega_2(z)$.
   - Compute tensorial weighted density $n_{m2}(z) = \int \rho(z') \omega_{m2}(z - z') dz'$.
   - Implement exact 1D reduced Tarazona modified 3rd term (accounting for uniaxial trace reduction $\frac{1}{2}\mathrm{Tr}(\mathbf{n}_{m2}^3) = \frac{3}{8}n_{m2}^3$):
     $$\Phi_3^{\text{Tensor}} = \frac{n_2^3 - 3n_2 v_2^2 + 9(v_2^2 n_{m2} - \frac{3}{8} n_{m2}^3)}{24\pi(1 - n_3)^2}$$
   - Combine tensor terms with White-Bear equation of state prefactors to implement `WB-Tensor` functional (Roth Eq. 378).
-- [ ] **Deliverable**: `src/functionals/tarazona_tensor.py` capable of handling tight confinement without numerical overflow.
+- [x] **Deliverable**: `src/functionals/tarazona_tensor.py` capable of handling tight confinement without numerical overflow.
 
 ---
 

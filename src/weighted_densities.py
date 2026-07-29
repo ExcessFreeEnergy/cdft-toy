@@ -21,6 +21,7 @@ class WeightedDensities:
         n3: Local packing fraction w_3 convolution array.
         v1: Vector flux z-component v_1 convolution array.
         v2: Vector flux z-component v_2 convolution array.
+        n_m2: Tensorial scalar component w_{m2} convolution array (optional).
     """
 
     n0: np.ndarray
@@ -29,6 +30,7 @@ class WeightedDensities:
     n3: np.ndarray
     v1: np.ndarray
     v2: np.ndarray
+    n_m2: Optional[np.ndarray] = None
 
     @property
     def max_n3(self) -> float:
@@ -47,7 +49,7 @@ class WeightedDensities:
 
     def to_dict(self) -> Dict[str, np.ndarray]:
         """Return dictionary mapping weight name to array."""
-        return {
+        res = {
             "n0": self.n0,
             "n1": self.n1,
             "n2": self.n2,
@@ -55,6 +57,9 @@ class WeightedDensities:
             "v1": self.v1,
             "v2": self.v2,
         }
+        if self.n_m2 is not None:
+            res["n_m2"] = self.n_m2
+        return res
 
 
 class WeightedDensityCalculator:
@@ -70,13 +75,13 @@ class WeightedDensityCalculator:
         self.convolver = FFTConvolver1D(grid, apply_endpoint_modification=apply_endpoint_modification)
 
     def compute(self, rho: np.ndarray) -> WeightedDensities:
-        """Compute all 6 spatial weighted densities for a density profile rho(z).
+        """Compute spatial weighted densities for a density profile rho(z).
 
         Args:
             rho: 1D spatial density profile array matching grid.z.
 
         Returns:
-            WeightedDensities instance containing all 6 arrays and feasibility metrics.
+            WeightedDensities instance containing all arrays and feasibility metrics.
         """
         raw_dict = self.convolver.compute_weighted_densities(rho)
         return WeightedDensities(
@@ -86,6 +91,7 @@ class WeightedDensityCalculator:
             n3=raw_dict["n3"],
             v1=raw_dict["v1"],
             v2=raw_dict["v2"],
+            n_m2=raw_dict.get("n_m2"),
         )
 
     def validate_bulk_spt(self, eta: float) -> Dict[str, float]:

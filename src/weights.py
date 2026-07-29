@@ -21,6 +21,7 @@ class PlanarWeights:
         "n3": False,
         "v1": True,
         "v2": True,
+        "n_m2": False,
     }
 
     def __init__(self, radius: float = 0.5) -> None:
@@ -35,6 +36,7 @@ class PlanarWeights:
         - int_{-R}^R w_0(z) dz = 1
         - int_{-R}^R w_2^z(z) dz = 0
         - int_{-R}^R z * w_2^z(z) dz = (4/3)*pi*R^3 = V_sphere
+        - int_{-R}^R w_{m2}(z) dz = 0
         """
         R = self.radius
         v_sphere = (4.0 / 3.0) * math.pi * (R**3)
@@ -47,6 +49,7 @@ class PlanarWeights:
             "n0": 1.0,
             "v2_integral": 0.0,
             "v2_first_moment": v_sphere,
+            "n_m2_integral": 0.0,
         }
 
     def get_grid_and_weights(
@@ -60,7 +63,7 @@ class PlanarWeights:
                 (3/8, 7/6, 23/24 factors) for O(dz^4) Fourier space Simpson accuracy.
 
         Returns:
-            Tuple of (z_w grid array, dictionary of 6 weight arrays).
+            Tuple of (z_w grid array, dictionary of weight arrays).
         """
         R = self.radius
         M = int(round(R / dz))
@@ -69,7 +72,7 @@ class PlanarWeights:
         abs_z = np.abs(z_w)
         mask = abs_z <= (R + 1e-12)
 
-        # 1. Scalar weight functions (Roth Sec. 8.2)
+        # 1. Scalar weight functions (Roth Sec. 8.2 & 8.4)
         w3 = np.zeros_like(z_w, dtype=float)
         w2 = np.zeros_like(z_w, dtype=float)
 
@@ -84,7 +87,11 @@ class PlanarWeights:
         v2[mask] = 2.0 * math.pi * z_w[mask]
         v1 = v2 / (4.0 * math.pi * R)
 
-        weights = {"n0": w0, "n1": w1, "n2": w2, "n3": w3, "v1": v1, "v2": v2}
+        # 3. Tensorial scalar component weight function w_m2 (Roth Sec. 4.4 Eq. 19)
+        wm2 = np.zeros_like(z_w, dtype=float)
+        wm2[mask] = 2.0 * math.pi * R * (((z_w[mask] ** 2) / (R**2)) - (1.0 / 3.0))
+
+        weights = {"n0": w0, "n1": w1, "n2": w2, "n3": w3, "v1": v1, "v2": v2, "n_m2": wm2}
 
         # 3. Section 8.4 Endpoint Weight Modifications (High-Order Simpson Quadrature)
         if apply_endpoint_modification and M >= 3:

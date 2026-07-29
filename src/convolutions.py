@@ -58,7 +58,7 @@ class FFTConvolver1D:
         return conv_full[: self.N_grid]
 
     def compute_weighted_densities(self, rho: np.ndarray) -> Dict[str, np.ndarray]:
-        """Compute all 6 spatial weighted densities n_0, n_1, n_2, n_3, v_1, v_2 in a single FFT forward pass.
+        """Compute all spatial weighted densities (n0, n1, n2, n3, v1, v2, n_m2) in a single FFT forward pass.
 
         Args:
             rho: 1D spatial density profile array matching grid.z.

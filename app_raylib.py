@@ -26,7 +26,7 @@ class RaylibCDFTApp:
         self.dz = 0.005
         self.geom_idx = 0  # 0: Single Planar Wall, 1: Slit Pore
         self.fmt_idx = 0  # 0: RF, 1: WB, 2: WBII, 3: WB-Tensor
-        self.fmt_names = ["RF", "WB", "WBII"]  # Available functional names
+        self.fmt_names = ["RF", "WB", "WBII", "WB-Tensor"]  # Available functional names
         self.view_mode_idx = 0  # 0: Density Profile rho(z), 1: Weighted Densities n_alpha(z), 2: Free Energy Phi(z)
 
         self.is_solving = False
