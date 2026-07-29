@@ -104,8 +104,8 @@ class FixedPicardSolver(DFTSolver):
         rho_target = np.zeros_like(self.grid.z, dtype=float)
         delta_c1 = c1[self.accessible] - c1_bulk
 
-        # Protect against exponential numerical overflow
-        delta_c1_clipped = np.clip(delta_c1, -50.0, 50.0)
+        # Protect against exponential numerical overflow during early iterations
+        delta_c1_clipped = np.clip(delta_c1, -10.0, 3.5)
         rho_target[self.accessible] = self.grid.params.rho_bulk * np.exp(delta_c1_clipped)
 
         # Calculate L2 residual norm normalized by domain length Lz

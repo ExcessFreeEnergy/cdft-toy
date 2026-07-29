@@ -2,5 +2,6 @@
 
 from src.solvers.base import DFTSolver, SolverResult
 from src.solvers.picard import FixedPicardSolver
+from src.solvers.roth_picard import RothPicardSolver
 
-__all__ = ["DFTSolver", "SolverResult", "FixedPicardSolver"]
+__all__ = ["DFTSolver", "SolverResult", "FixedPicardSolver", "RothPicardSolver"]

@@ -6,7 +6,7 @@ import pyray as pr
 
 from src.functionals import RosenfeldFunctional
 from src.grid import Grid1D, PhysicalParameters
-from src.solvers import FixedPicardSolver
+from src.solvers import RothPicardSolver
 from src.ui.plotter import Plotter2D
 from src.ui.theme import Theme
 from src.ui.widgets import UIWidgets
@@ -32,6 +32,7 @@ class RaylibCDFTApp:
         self.show_benchmark = True
         self.iteration = 0
         self.residual = 0.0
+        self.alpha_used = 0.03
 
         # Instantiate functional engine
         self.func = RosenfeldFunctional()
@@ -49,7 +50,7 @@ class RaylibCDFTApp:
         self.plotter_diag = Plotter2D(360, 535, self.width - 375, 175, title="Diagnostic Metrics & Contact Theorem")
 
     def rebuild_system(self) -> None:
-        """Reconstruct PhysicalParameters, Grid1D, FixedPicardSolver, and initial density profile."""
+        """Reconstruct PhysicalParameters, Grid1D, RothPicardSolver, and initial density profile."""
         self.params = PhysicalParameters(eta=self.eta)
         dz_clamped = min(0.010, max(0.001, self.dz))
         self.grid = Grid1D(params=self.params, Lz=self.Lz, dz=dz_clamped)
@@ -58,11 +59,11 @@ class RaylibCDFTApp:
         w_left = 0.0
         w_right = self.Lz if self.geom_idx == 1 else None
 
-        # Instantiate physical Picard solver
-        self.solver = FixedPicardSolver(
+        # Instantiate physical Roth adaptive Picard solver
+        self.solver = RothPicardSolver(
             grid=self.grid,
             functional=self.func,
-            alpha=0.03,
+            alpha_init=0.03,
             wall_left=w_left,
             wall_right=w_right,
         )
@@ -70,8 +71,13 @@ class RaylibCDFTApp:
         self.v_ext = self.grid.external_potential(wall_left=w_left, wall_right=w_right)
         self.rho = self.grid.initial_density_profile(wall_left=w_left, wall_right=w_right)
         self.rho_init = self.rho.copy()
+
+        self.rho_prev = None
+        self.rho_target_prev = None
+
         self.iteration = 0
         self.residual = 0.0
+        self.alpha_used = 0.03
 
         # Compute initial weighted densities, free energy density, c1, and PY pressure
         self.wd = self.calc.compute(self.rho)
@@ -102,12 +108,18 @@ class RaylibCDFTApp:
         return None
 
     def run_solver_step(self) -> None:
-        """Execute a single physical Picard solver step and update all physical quantities."""
+        """Execute a single adaptive Roth Picard solver step and update all physical quantities."""
         if not self.is_solving:
             return
 
         self.iteration += 1
-        self.rho, self.c1, self.residual = self.solver.solve_step(self.rho)
+        rho_next, rho_target_cur, self.c1, self.residual, self.alpha_used = self.solver.solve_step_adaptive(
+            self.rho, self.rho_prev, self.rho_target_prev
+        )
+
+        self.rho_prev = self.rho.copy()
+        self.rho_target_prev = rho_target_cur.copy()
+        self.rho = rho_next
 
         # Recompute spatial weighted densities and free energy density
         self.wd = self.calc.compute(self.rho)
@@ -115,7 +127,7 @@ class RaylibCDFTApp:
         self.phi = self.func.evaluate_phi(self.wd)
         self.f_ex = self.func.compute_total_free_energy(self.grid, self.wd)
 
-        if self.residual < 1e-6 or self.iteration >= 500:
+        if self.residual < 1e-6 or self.iteration >= 2000:
             self.is_solving = False
 
     def render_sidebar(self) -> None:
@@ -134,12 +146,14 @@ class RaylibCDFTApp:
         tt_1a = "Set bulk packing fraction to eta=0.4257 (Roth 2010 Fig 1a)"
         if UIWidgets.button(25, curr_y, btn_w_half, 22, "Preset: Fig 1a (0.4257)", bg_color=Theme.HEADER_BG, tooltip=tt_1a):
             self.eta = 0.4257
+            new_eta = 0.4257
             self.geom_idx = 0
             self.rebuild_system()
 
         tt_1b = "Set bulk packing fraction to eta=0.4783 (Roth 2010 Fig 1b)"
         if UIWidgets.button(185, curr_y, btn_w_half, 22, "Preset: Fig 1b (0.4783)", bg_color=Theme.HEADER_BG, tooltip=tt_1b):
             self.eta = 0.4783
+            new_eta = 0.4783
             self.geom_idx = 0
             self.rebuild_system()
 
@@ -191,7 +205,7 @@ class RaylibCDFTApp:
         btn_w = 150.0
         btn_h = 28.0
 
-        solve_label = "Pause Solver" if self.is_solving else "Solve (Picard)"
+        solve_label = "Pause Solver" if self.is_solving else "Solve (Roth Picard)"
         if UIWidgets.button(25, curr_y, btn_w, btn_h, solve_label, bg_color=Theme.PRIMARY_BLUE):
             self.is_solving = not self.is_solving
 
@@ -226,9 +240,10 @@ class RaylibCDFTApp:
             (f"Sphere Radius (R)  : {self.params.radius:.4f} sigma", Theme.TEXT_PRIMARY),
             (f"Bulk Density (rho) : {self.params.rho_bulk:.6f}", Theme.TEXT_PRIMARY),
             (f"Solver Iter (k)    : {self.iteration}", Theme.TEXT_PRIMARY),
+            (f"Alpha Opt (alpha)  : {self.alpha_used:.4f}", Theme.PRIMARY_BLUE),
             (f"Residual Norm (R)  : {self.residual:.2e}", Theme.WARNING_AMBER if self.is_solving else Theme.TEXT_PRIMARY),
             (f"Max Packing (n3)   : {status_n3}", badge_color),
-            (f"Status             : {'Solving (Picard)...' if self.is_solving else ('CONVERGED' if self.residual > 0 and self.residual < 1e-6 else 'Ready / Idle')}", Theme.SUCCESS_GREEN if (self.is_solving or self.residual < 1e-6) else Theme.TEXT_PRIMARY),
+            (f"Status             : {'Solving (Roth Picard)...' if self.is_solving else ('CONVERGED' if self.residual > 0 and self.residual < 1e-6 else 'Ready / Idle')}", Theme.SUCCESS_GREEN if (self.is_solving or self.residual < 1e-6) else Theme.TEXT_PRIMARY),
         ]
 
         for line, color in info_lines:
