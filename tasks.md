@@ -105,13 +105,13 @@
 ---
 
 ## Step 09: Thermodynamic Observables & Sum-Rule Validation
-- [ ] **Objective**: Calculate wall surface tension and verify contact theorem and Gibbs adsorption sum-rules.
-- [ ] **Details**:
+- [x] **Objective**: Calculate wall surface tension and verify contact theorem and Gibbs adsorption sum-rules.
+- [x] **Details**:
   - Compute wall surface tension: $\gamma = \frac{1}{A}(\Omega + P_{\text{bulk}} V)$.
   - Validate surface tension against analytical bulk-route formula: $\beta \gamma_{\text{bulk}} = \left.\frac{\partial \Phi}{\partial n_2}\right|_{\text{bulk}}$.
   - Verify contact theorem to 4 significant figures: $\rho(z = R^+) = \beta P_{\text{bulk}}$.
   - Verify Gibbs adsorption theorem: $\Gamma = \int (\rho(z) - \rho_{\text{bulk}}) dz = -\frac{\partial \gamma}{\partial \mu}$.
-- [ ] **Deliverable**: `src/diagnostics.py` printing sum-rule accuracy metrics.
+- [x] **Deliverable**: `src/diagnostics.py` printing sum-rule accuracy metrics.
 
 ---
 

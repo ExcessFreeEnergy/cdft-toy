@@ -4,6 +4,7 @@ import math
 import numpy as np
 import pyray as pr
 
+from src.diagnostics import SumRuleDiagnostics
 from src.functionals import functional_factory
 from src.grid import Grid1D, PhysicalParameters
 from src.solvers import RothPicardSolver
@@ -228,7 +229,7 @@ class RaylibCDFTApp:
         curr_y += 34.0
 
         # 6. Physics Info Card & Physical Feasibility Badge
-        UIWidgets.draw_panel(25, curr_y, 310, 186, title="System Thermodynamics & Info", bg_color=Theme.BG_DARK)
+        UIWidgets.draw_panel(25, curr_y, 310, 240, title="System Thermodynamics & Info", bg_color=Theme.BG_DARK)
         info_y = curr_y + 28
 
         max_n3 = self.wd.max_n3
@@ -245,11 +246,21 @@ class RaylibCDFTApp:
         fmt_label = self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
         p_bulk = self.func.compute_bulk_pressure(self.eta, self.params.sigma)
 
+        # Compute live sum-rule diagnostics
+        rho_c = SumRuleDiagnostics.extrapolate_contact_density(self.grid, self.rho)
+        gamma_sp = SumRuleDiagnostics.compute_surface_tension(self.grid, self.rho, self.func, self.calc)
+        gamma_bulk = SumRuleDiagnostics.compute_bulk_route_surface_tension(self.func, self.eta, self.params.sigma)
+        gamma_ex = SumRuleDiagnostics.compute_excess_adsorption(self.grid, self.rho)
+        err_contact = abs(rho_c - p_bulk) / p_bulk * 100.0
+
         info_lines = [
             (f"Active Functional  : {fmt_label}", Theme.PRIMARY_BLUE),
             (f"Sphere Radius (R)  : {self.params.radius:.4f} sigma", Theme.TEXT_PRIMARY),
             (f"Bulk Density (rho) : {self.params.rho_bulk:.6f}", Theme.TEXT_PRIMARY),
             (f"Bulk Pressure (bp) : {p_bulk:.4f}", Theme.TEXT_PRIMARY),
+            (f"Contact rho(R+)    : {rho_c:.4f} ({err_contact:.2f}% err)", Theme.SUCCESS_GREEN if err_contact < 0.1 else Theme.TEXT_PRIMARY),
+            (f"Surface Tension bg : {gamma_sp:.4f} (bulk: {gamma_bulk:.4f})", Theme.TEXT_PRIMARY),
+            (f"Excess Adsorption G: {gamma_ex:.4f}", Theme.TEXT_PRIMARY),
             (f"Solver Iter (k)    : {self.iteration}", Theme.TEXT_PRIMARY),
             (f"Alpha Opt (alpha)  : {self.alpha_used:.4f}", Theme.PRIMARY_BLUE),
             (f"Residual Norm (R)  : {self.residual:.2e}", Theme.WARNING_AMBER if self.is_solving else Theme.TEXT_PRIMARY),
