@@ -6,6 +6,7 @@ import pyray as pr
 
 from src.functionals import RosenfeldFunctional
 from src.grid import Grid1D, PhysicalParameters
+from src.solvers import FixedPicardSolver
 from src.ui.plotter import Plotter2D
 from src.ui.theme import Theme
 from src.ui.widgets import UIWidgets
@@ -30,11 +31,12 @@ class RaylibCDFTApp:
         self.is_solving = False
         self.show_benchmark = True
         self.iteration = 0
+        self.residual = 0.0
 
         # Instantiate functional engine
         self.func = RosenfeldFunctional()
 
-        # Physical system, grid, and weighted density calculator init
+        # Physical system, grid, solver, and weighted density calculator init
         self.rebuild_system()
 
         # Raylib window initialization
@@ -47,7 +49,7 @@ class RaylibCDFTApp:
         self.plotter_diag = Plotter2D(360, 535, self.width - 375, 175, title="Diagnostic Metrics & Contact Theorem")
 
     def rebuild_system(self) -> None:
-        """Reconstruct PhysicalParameters, Grid1D, WeightedDensityCalculator, and initial density profile."""
+        """Reconstruct PhysicalParameters, Grid1D, FixedPicardSolver, and initial density profile."""
         self.params = PhysicalParameters(eta=self.eta)
         dz_clamped = min(0.010, max(0.001, self.dz))
         self.grid = Grid1D(params=self.params, Lz=self.Lz, dz=dz_clamped)
@@ -56,17 +58,29 @@ class RaylibCDFTApp:
         w_left = 0.0
         w_right = self.Lz if self.geom_idx == 1 else None
 
+        # Instantiate physical Picard solver
+        self.solver = FixedPicardSolver(
+            grid=self.grid,
+            functional=self.func,
+            alpha=0.03,
+            wall_left=w_left,
+            wall_right=w_right,
+        )
+
         self.v_ext = self.grid.external_potential(wall_left=w_left, wall_right=w_right)
         self.rho = self.grid.initial_density_profile(wall_left=w_left, wall_right=w_right)
         self.rho_init = self.rho.copy()
         self.iteration = 0
+        self.residual = 0.0
 
-        # Compute initial weighted densities, free energy density, and PY pressure
+        # Compute initial weighted densities, free energy density, c1, and PY pressure
         self.wd = self.calc.compute(self.rho)
         self.n_dict = self.wd.to_dict()
         self.phi = self.func.evaluate_phi(self.wd)
         self.f_ex = self.func.compute_total_free_energy(self.grid, self.wd)
         self.p_py = self.func.compute_bulk_pressure(self.eta, self.params.sigma)
+
+        self.c1, self.c1_bulk = self.solver.compute_c1(self.rho)
 
     def get_benchmark_points(self):
         """Return benchmark Monte Carlo data points from Roth (2010) Fig. 1 for comparison."""
@@ -88,23 +102,12 @@ class RaylibCDFTApp:
         return None
 
     def run_solver_step(self) -> None:
-        """Execute a single solver relaxation step and update weighted densities & free energy."""
+        """Execute a single physical Picard solver step and update all physical quantities."""
         if not self.is_solving:
             return
 
         self.iteration += 1
-        R = self.params.radius
-
-        acc = self.grid.z >= R
-        if self.geom_idx == 1:
-            acc = (self.grid.z >= R) & (self.grid.z <= self.Lz - R)
-
-        decay = np.exp(-(self.grid.z[acc] - R) / 0.8)
-        osc = 1.0 + (1.8 * (self.eta / 0.4257) - 1.0) * np.cos(2.0 * math.pi * (self.grid.z[acc] - R)) * decay
-
-        target_rho = self.params.rho_bulk * osc
-        alpha = min(1.0, 0.02 * self.iteration)
-        self.rho[acc] = (1.0 - alpha) * self.rho[acc] + alpha * target_rho
+        self.rho, self.c1, self.residual = self.solver.solve_step(self.rho)
 
         # Recompute spatial weighted densities and free energy density
         self.wd = self.calc.compute(self.rho)
@@ -112,7 +115,7 @@ class RaylibCDFTApp:
         self.phi = self.func.evaluate_phi(self.wd)
         self.f_ex = self.func.compute_total_free_energy(self.grid, self.wd)
 
-        if self.iteration >= 50:
+        if self.residual < 1e-6 or self.iteration >= 500:
             self.is_solving = False
 
     def render_sidebar(self) -> None:
@@ -188,7 +191,7 @@ class RaylibCDFTApp:
         btn_w = 150.0
         btn_h = 28.0
 
-        solve_label = "Pause" if self.is_solving else "Solve / Relax"
+        solve_label = "Pause Solver" if self.is_solving else "Solve (Picard)"
         if UIWidgets.button(25, curr_y, btn_w, btn_h, solve_label, bg_color=Theme.PRIMARY_BLUE):
             self.is_solving = not self.is_solving
 
@@ -222,10 +225,10 @@ class RaylibCDFTApp:
         info_lines = [
             (f"Sphere Radius (R)  : {self.params.radius:.4f} sigma", Theme.TEXT_PRIMARY),
             (f"Bulk Density (rho) : {self.params.rho_bulk:.6f}", Theme.TEXT_PRIMARY),
-            (f"PY Pressure (beta*p): {self.p_py:.4f}", Theme.PRIMARY_BLUE),
-            (f"Excess Energy (F_ex): {self.f_ex:.4f} kBT", Theme.WARNING_AMBER),
+            (f"Solver Iter (k)    : {self.iteration}", Theme.TEXT_PRIMARY),
+            (f"Residual Norm (R)  : {self.residual:.2e}", Theme.WARNING_AMBER if self.is_solving else Theme.TEXT_PRIMARY),
             (f"Max Packing (n3)   : {status_n3}", badge_color),
-            (f"Status             : {'Solving...' if self.is_solving else 'Ready / Idle'}", Theme.SUCCESS_GREEN if self.is_solving else Theme.TEXT_PRIMARY),
+            (f"Status             : {'Solving (Picard)...' if self.is_solving else ('CONVERGED' if self.residual > 0 and self.residual < 1e-6 else 'Ready / Idle')}", Theme.SUCCESS_GREEN if (self.is_solving or self.residual < 1e-6) else Theme.TEXT_PRIMARY),
         ]
 
         for line, color in info_lines:
@@ -274,7 +277,7 @@ class RaylibCDFTApp:
                     y_max=y_max_plot,
                     x_label="z / sigma",
                     y_label="rho(z)",
-                    primary_label="rho(z)",
+                    primary_label="rho(z) Equilibrium Profile",
                     secondary_curves=sec_curves,
                     benchmark_points=bm_pts,
                 )
@@ -321,17 +324,17 @@ class RaylibCDFTApp:
                     benchmark_points=None,
                 )
 
-            # Render diagnostic plot
+            # Render diagnostic plot (c1(z) direct correlation function)
             self.plotter_diag.render(
                 z_arr=self.grid.z,
-                y_arr=self.v_ext,
+                y_arr=self.c1,
                 z_min=0.0,
                 z_max=self.Lz,
-                y_min=0.0,
-                y_max=5.0,
+                y_min=min(0.0, float(np.min(self.c1))) - 0.5,
+                y_max=max(1.0, float(np.max(self.c1))) + 0.5,
                 x_label="z / sigma",
-                y_label="V_ext(z)",
-                primary_label="V_ext(z)",
+                y_label="c^(1)(z)",
+                primary_label="c^(1)(z) Direct Correlation",
             )
 
             pr.end_drawing()

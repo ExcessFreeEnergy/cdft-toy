@@ -37,9 +37,10 @@ class FFTConvolver1D:
         # Pre-compute FFT transforms of padded weight functions
         self.fft_weights: Dict[str, np.ndarray] = {}
         for key, w_arr in self.weights_dict.items():
-            # Pad weight array such that origin z=0 is at index 0 of padded array
+            # Pad weight array such that origin z=0 is at index 0 and negative lags wrap to end of N_fft
             padded_w = np.zeros(self.N_fft, dtype=float)
-            padded_w[: self.N_w] = np.roll(w_arr, -self.center_idx)
+            padded_w[: self.N_w - self.center_idx] = w_arr[self.center_idx :]
+            padded_w[self.N_fft - self.center_idx :] = w_arr[: self.center_idx]
             self.fft_weights[key] = fft.fft(padded_w, n=self.N_fft)
 
     def _convolve_raw(self, f: np.ndarray, key: str, parity_flip: bool = False) -> np.ndarray:
