@@ -23,7 +23,7 @@ class FixedPicardSolver(DFTSolver):
         wall_left: Optional[float] = 0.0,
         wall_right: Optional[float] = None,
     ) -> None:
-        from src.functionals import FMTFunctional, RosenfeldFunctional, functional_factory
+        from src.functionals import RosenfeldFunctional, functional_factory
 
         self.grid = grid
         if isinstance(functional, str):
