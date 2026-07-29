@@ -52,12 +52,7 @@ def _phi3_series(n3: np.ndarray) -> np.ndarray:
 
     phi3(n3) = (4/3)*n3 - (1/6)*n3^2 - (1/15)*n3^3 - (1/30)*n3^4
     """
-    return (
-        (4.0 / 3.0) * n3
-        - (1.0 / 6.0) * n3**2
-        - (1.0 / 15.0) * n3**3
-        - (1.0 / 30.0) * n3**4
-    )
+    return (4.0 / 3.0) * n3 - (1.0 / 6.0) * n3**2 - (1.0 / 15.0) * n3**3 - (1.0 / 30.0) * n3**4
 
 
 def _dphi3_series(n3: np.ndarray) -> np.ndarray:
@@ -137,11 +132,7 @@ class WhiteBearFunctional(FMTFunctional):
         d_n2 = (n1 / one_m_n3) + 3.0 * (n2**2 - v2**2) * f4_val
         d_v2 = (-v1 / one_m_n3) - 6.0 * n2 * v2 * f4_val
 
-        d_n3 = (
-            (n0 / one_m_n3)
-            + (n1 * n2 - v1 * v2) / (one_m_n3**2)
-            + (n2**3 - 3.0 * n2 * (v2**2)) * df4_val
-        )
+        d_n3 = (n0 / one_m_n3) + (n1 * n2 - v1 * v2) / (one_m_n3**2) + (n2**3 - 3.0 * n2 * (v2**2)) * df4_val
 
         return {
             "n0": d_n0,
@@ -177,9 +168,7 @@ class WhiteBearIIFunctional(FMTFunctional):
         res = np.empty_like(n3, dtype=float)
 
         n3_safe = np.where(mask, self.low_density_cutoff, n3)
-        analytic = (
-            2.0 * n3_safe - n3_safe**2 + 2.0 * (1.0 - n3_safe) * np.log(1.0 - n3_safe)
-        ) / n3_safe
+        analytic = (2.0 * n3_safe - n3_safe**2 + 2.0 * (1.0 - n3_safe) * np.log(1.0 - n3_safe)) / n3_safe
         res[~mask] = analytic[~mask]
         res[mask] = _phi2_series(n3[mask])
         return res
@@ -190,9 +179,7 @@ class WhiteBearIIFunctional(FMTFunctional):
         res = np.empty_like(n3, dtype=float)
 
         n3_safe = np.where(mask, self.low_density_cutoff, n3)
-        analytic = (-(n3_safe**2) - 2.0 * n3_safe - 2.0 * np.log(1.0 - n3_safe)) / (
-            n3_safe**2
-        )
+        analytic = (-(n3_safe**2) - 2.0 * n3_safe - 2.0 * np.log(1.0 - n3_safe)) / (n3_safe**2)
         res[~mask] = analytic[~mask]
         res[mask] = _dphi2_series(n3[mask])
         return res
@@ -204,10 +191,7 @@ class WhiteBearIIFunctional(FMTFunctional):
 
         n3_safe = np.where(mask, self.low_density_cutoff, n3)
         analytic = (
-            2.0 * n3_safe
-            - 3.0 * n3_safe**2
-            + 2.0 * n3_safe**3
-            + 2.0 * ((1.0 - n3_safe) ** 2) * np.log(1.0 - n3_safe)
+            2.0 * n3_safe - 3.0 * n3_safe**2 + 2.0 * n3_safe**3 + 2.0 * ((1.0 - n3_safe) ** 2) * np.log(1.0 - n3_safe)
         ) / (n3_safe**2)
         res[~mask] = analytic[~mask]
         res[mask] = _phi3_series(n3[mask])
@@ -219,12 +203,9 @@ class WhiteBearIIFunctional(FMTFunctional):
         res = np.empty_like(n3, dtype=float)
 
         n3_safe = np.where(mask, self.low_density_cutoff, n3)
-        analytic = (
-            -4.0 * n3_safe
-            + 2.0 * n3_safe**2
-            + 2.0 * n3_safe**3
-            - 4.0 * (1.0 - n3_safe) * np.log(1.0 - n3_safe)
-        ) / (n3_safe**3)
+        analytic = (-4.0 * n3_safe + 2.0 * n3_safe**2 + 2.0 * n3_safe**3 - 4.0 * (1.0 - n3_safe) * np.log(1.0 - n3_safe)) / (
+            n3_safe**3
+        )
         res[~mask] = analytic[~mask]
         res[mask] = _dphi3_series(n3[mask])
         return res
@@ -236,23 +217,17 @@ class WhiteBearIIFunctional(FMTFunctional):
     def df2_wb2(self, n3: np.ndarray) -> np.ndarray:
         """Derivative df2_WBII / dn3."""
         one_m_n3 = 1.0 - n3
-        num = (
-            (1.0 / 3.0) * self.dphi2(n3) * one_m_n3 + 1.0 + (1.0 / 3.0) * self.phi2(n3)
-        )
+        num = (1.0 / 3.0) * self.dphi2(n3) * one_m_n3 + 1.0 + (1.0 / 3.0) * self.phi2(n3)
         return num / (one_m_n3**2)
 
     def f4_wb2(self, n3: np.ndarray) -> np.ndarray:
         """Pre-factor f4_WBII(n3)."""
-        return (1.0 - (1.0 / 3.0) * self.phi3(n3)) / (
-            24.0 * math.pi * ((1.0 - n3) ** 2)
-        )
+        return (1.0 - (1.0 / 3.0) * self.phi3(n3)) / (24.0 * math.pi * ((1.0 - n3) ** 2))
 
     def df4_wb2(self, n3: np.ndarray) -> np.ndarray:
         """Derivative df4_WBII / dn3."""
         one_m_n3 = 1.0 - n3
-        num = -(1.0 / 3.0) * self.dphi3(n3) * one_m_n3 + 2.0 * (
-            1.0 - (1.0 / 3.0) * self.phi3(n3)
-        )
+        num = -(1.0 / 3.0) * self.dphi3(n3) * one_m_n3 + 2.0 * (1.0 - (1.0 / 3.0) * self.phi3(n3))
         return num / (24.0 * math.pi * (one_m_n3**3))
 
     def evaluate_phi(self, wd: WeightedDensities) -> np.ndarray:
@@ -284,11 +259,7 @@ class WhiteBearIIFunctional(FMTFunctional):
         d_n2 = n1 * f2_val + 3.0 * (n2**2 - v2**2) * f4_val
         d_v2 = -v1 * f2_val - 6.0 * n2 * v2 * f4_val
 
-        d_n3 = (
-            (n0 / one_m_n3)
-            + (n1 * n2 - v1 * v2) * df2_val
-            + (n2**3 - 3.0 * n2 * (v2**2)) * df4_val
-        )
+        d_n3 = (n0 / one_m_n3) + (n1 * n2 - v1 * v2) * df2_val + (n2**3 - 3.0 * n2 * (v2**2)) * df4_val
 
         return {
             "n0": d_n0,

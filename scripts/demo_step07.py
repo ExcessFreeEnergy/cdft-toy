@@ -20,9 +20,7 @@ def main():
     functionals = ["RF", "WB", "WBII"]
 
     print(f"\n1. BULK THERMODYNAMIC COMPARISON AT ETA = {eta:.4f}:")
-    print(
-        f"{'Functional':<12} | {'Bulk Pressure (beta*p)':<22} | {'Excess Chem. Pot. (beta*mu_ex)':<32}"
-    )
+    print(f"{'Functional':<12} | {'Bulk Pressure (beta*p)':<22} | {'Excess Chem. Pot. (beta*mu_ex)':<32}")
     print("-" * 75)
 
     for f_name in functionals:
@@ -32,9 +30,7 @@ def main():
         print(f"{f_name:<12} | {p_bulk:<22.6f} | {mu_ex:<32.6f}")
 
     print("\n2. SOLVER CONVERGENCE & CONTACT DENSITY PROFILES:")
-    print(
-        f"{'Functional':<12} | {'Converged':<10} | {'Iterations':<10} | {'Residual':<14} | {'Contact rho':<12}"
-    )
+    print(f"{'Functional':<12} | {'Converged':<10} | {'Iterations':<10} | {'Residual':<14} | {'Contact rho':<12}")
     print("-" * 75)
 
     R = params.radius
@@ -46,9 +42,7 @@ def main():
         idx_contact = np.searchsorted(grid.z, R)
         rho_contact = res.rho[idx_contact]
 
-        print(
-            f"{f_name:<12} | {res.converged!s:<10} | {res.iterations:<10} | {res.residual:<14.6e} | {rho_contact:<12.6f}"
-        )
+        print(f"{f_name:<12} | {res.converged!s:<10} | {res.iterations:<10} | {res.residual:<14.6e} | {rho_contact:<12.6f}")
 
     print("\n" + "=" * 75)
     print("Step 07 White-Bear & White-Bear II Functional Extensions fully verified!")

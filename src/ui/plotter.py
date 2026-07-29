@@ -47,11 +47,7 @@ class Plotter2D:
         px = self.plot_x + ((z - z_min) / z_span) * self.plot_w
 
         if np.isinf(y_val) or np.isnan(y_val):
-            py = (
-                self.plot_y
-                if (y_val > 0 or np.isnan(y_val))
-                else (self.plot_y + self.plot_h)
-            )
+            py = self.plot_y if (y_val > 0 or np.isnan(y_val)) else (self.plot_y + self.plot_h)
         else:
             py = (self.plot_y + self.plot_h) - ((y_val - y_min) / y_span) * self.plot_h
 
@@ -128,9 +124,7 @@ class Plotter2D:
                 Theme.GRID_LINE,
             )
             tick_str = f"{y_val:.1f}".encode()
-            pr.draw_text(
-                tick_str, int(self.plot_x - 38), int(gy - 5), 11, Theme.TEXT_MUTED
-            )
+            pr.draw_text(tick_str, int(self.plot_x - 38), int(gy - 5), 11, Theme.TEXT_MUTED)
 
         # Axis Titles
         pr.draw_text(
@@ -153,9 +147,7 @@ class Plotter2D:
             points: list[pr.Vector2] = []
             step = max(1, len(z_arr) // 800)
             for k in range(0, len(z_arr), step):
-                px, py = self.map_to_screen(
-                    z_arr[k], y_arr[k], z_min, z_max, y_min, y_max
-                )
+                px, py = self.map_to_screen(z_arr[k], y_arr[k], z_min, z_max, y_min, y_max)
                 px = max(self.plot_x, min(self.plot_x + self.plot_w, px))
                 py = max(self.plot_y, min(self.plot_y + self.plot_h, py))
                 points.append(pr.Vector2(px, py))
@@ -165,19 +157,15 @@ class Plotter2D:
 
         # 6. Secondary Curves (if provided)
         if secondary_curves:
-            for sec_y, sec_color, sec_name in secondary_curves:
+            for sec_y, sec_color, _sec_name in secondary_curves:
                 if len(sec_y) == len(z_arr):
                     sec_pts: list[pr.Vector2] = []
-                    step = max(1, len(z_arr) // 800)
-                    for k in range(0, len(z_arr), step):
-                        px, py = self.map_to_screen(
-                            z_arr[k], sec_y[k], z_min, z_max, y_min, y_max
-                        )
-                        px = max(self.plot_x, min(self.plot_x + self.plot_w, px))
-                        py = max(self.plot_y, min(self.plot_y + self.plot_h, py))
+                    for i in range(len(z_arr)):
+                        px, py = self.map_to_screen(z_arr[i], sec_y[i], z_min, z_max, y_min, y_max)
                         sec_pts.append(pr.Vector2(px, py))
-                    for idx in range(len(sec_pts) - 1):
-                        pr.draw_line_v(sec_pts[idx], sec_pts[idx + 1], sec_color)
+
+                    for i in range(len(sec_pts) - 1):
+                        pr.draw_line_v(sec_pts[i], sec_pts[i + 1], sec_color)
 
         # 7. Legend Box
         legend_x = self.plot_x + self.plot_w - 180
@@ -213,7 +201,7 @@ class Plotter2D:
         # 8. Benchmark Points Overlay (if provided)
         if benchmark_points is not None:
             bm_z, bm_y = benchmark_points
-            for bz, by in zip(bm_z, bm_y):
+            for bz, by in zip(bm_z, bm_y, strict=False):
                 if z_min <= bz <= z_max:
                     px, py = self.map_to_screen(bz, by, z_min, z_max, y_min, y_max)
                     px = max(self.plot_x, min(self.plot_x + self.plot_w, px))
@@ -231,9 +219,7 @@ class Plotter2D:
             actual_z = float(z_arr[idx])
             actual_y = float(y_arr[idx])
 
-            cur_px, cur_py = self.map_to_screen(
-                actual_z, actual_y, z_min, z_max, y_min, y_max
-            )
+            cur_px, cur_py = self.map_to_screen(actual_z, actual_y, z_min, z_max, y_min, y_max)
             cur_px = max(self.plot_x, min(self.plot_x + self.plot_w, cur_px))
             cur_py = max(self.plot_y, min(self.plot_y + self.plot_h, cur_py))
 

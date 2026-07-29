@@ -77,9 +77,7 @@ class FixedPicardSolver(DFTSolver):
         """
         wd = self.calc.compute(rho)
         df_dn_dict = self.functional.evaluate_derivatives(wd)
-        c1_conv_dict = self.convolver.compute_direct_correlation_convolutions(
-            df_dn_dict
-        )
+        c1_conv_dict = self.convolver.compute_direct_correlation_convolutions(df_dn_dict)
 
         # Sum convolution components: c^(1)(z) = - sum_alpha conv_alpha(z)
         c1 = np.zeros_like(self.grid.z, dtype=float)
@@ -88,9 +86,7 @@ class FixedPicardSolver(DFTSolver):
 
         return c1, self.c1_bulk
 
-    def solve_step(
-        self, rho: np.ndarray, alpha: float | None = None
-    ) -> tuple[np.ndarray, np.ndarray, float]:
+    def solve_step(self, rho: np.ndarray, alpha: float | None = None) -> tuple[np.ndarray, np.ndarray, float]:
         """Execute a single Picard iteration step.
 
         Args:
@@ -109,9 +105,7 @@ class FixedPicardSolver(DFTSolver):
 
         # Protect against exponential numerical overflow during early iterations
         delta_c1_clipped = np.clip(delta_c1, -10.0, 3.5)
-        rho_target[self.accessible] = self.grid.params.rho_bulk * np.exp(
-            delta_c1_clipped
-        )
+        rho_target[self.accessible] = self.grid.params.rho_bulk * np.exp(delta_c1_clipped)
 
         # Calculate L2 residual norm normalized by domain length Lz
         diff_sq = (rho_target - rho) ** 2
@@ -134,9 +128,7 @@ class FixedPicardSolver(DFTSolver):
         mix_alpha = alpha if alpha is not None else self.alpha
 
         if rho_init is None:
-            rho_current = self.grid.initial_density_profile(
-                wall_left=self.wall_left, wall_right=self.wall_right
-            )
+            rho_current = self.grid.initial_density_profile(wall_left=self.wall_left, wall_right=self.wall_right)
         else:
             rho_current = rho_init.copy()
 
@@ -144,7 +136,7 @@ class FixedPicardSolver(DFTSolver):
         c1_last = np.zeros_like(self.grid.z)
         converged = False
 
-        for k in range(1, max_iter + 1):
+        for _k in range(1, max_iter + 1):
             rho_next, c1_last, res = self.solve_step(rho_current, alpha=mix_alpha)
             history_residual.append(res)
             rho_current = rho_next

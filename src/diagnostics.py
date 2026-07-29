@@ -35,9 +35,7 @@ class SumRuleDiagnostics:
     """Thermodynamic observables and sum-rule validation engine (Roth Sec. 5.1)."""
 
     @staticmethod
-    def extrapolate_contact_density(
-        grid: Grid1D, rho: np.ndarray, wall_position: float = 0.0
-    ) -> float:
+    def extrapolate_contact_density(grid: Grid1D, rho: np.ndarray, wall_position: float = 0.0) -> float:
         """Extrapolate density profile to wall contact z = wall_position + R using 3-point fit.
 
         Args:
@@ -87,17 +85,13 @@ class SumRuleDiagnostics:
             Tuple of (rho_contact, p_bulk, rel_error, passed_boolean).
         """
         rho_contact = self.extrapolate_contact_density(grid, rho)
-        p_bulk = functional.compute_bulk_pressure(
-            grid.params.eta, sigma=grid.params.sigma
-        )
+        p_bulk = functional.compute_bulk_pressure(grid.params.eta, sigma=grid.params.sigma)
         err_rel = float(abs(rho_contact - p_bulk) / p_bulk)
         passed = err_rel <= tol_rel
         return rho_contact, p_bulk, err_rel, passed
 
     @staticmethod
-    def compute_bulk_route_surface_tension(
-        functional: FMTFunctional, eta: float, sigma: float = 1.0
-    ) -> float:
+    def compute_bulk_route_surface_tension(functional: FMTFunctional, eta: float, sigma: float = 1.0) -> float:
         """Compute analytical bulk-route wall surface tension beta * gamma_bulk = (dPhi/dn2)_bulk (Roth Eq. 447).
 
         Args:
@@ -234,9 +228,7 @@ class SumRuleDiagnostics:
         gamma_m, mu_m, _, _, _ = _solve_and_get_gamma_mu(eta - delta_eta)
 
         minus_dgamma_dmu = -(gamma_p - gamma_m) / (mu_p - mu_m)
-        err_rel = float(
-            abs(minus_dgamma_dmu - gamma_ex_mid) / max(1e-10, abs(gamma_ex_mid))
-        )
+        err_rel = float(abs(minus_dgamma_dmu - gamma_ex_mid) / max(1e-10, abs(gamma_ex_mid)))
         return minus_dgamma_dmu, gamma_ex_mid, err_rel
 
     @classmethod
@@ -258,13 +250,9 @@ class SumRuleDiagnostics:
         Returns:
             SumRuleResult dataclass containing all metrics.
         """
-        rho_c, p_bulk, err_c, passed_c = self.verify_contact_theorem(
-            grid, rho, functional
-        )
+        rho_c, p_bulk, err_c, passed_c = self.verify_contact_theorem(grid, rho, functional)
         gamma_spatial = self.compute_surface_tension(grid, rho, functional, calc=calc)
-        gamma_bulk = self.compute_bulk_route_surface_tension(
-            functional, grid.params.eta, sigma=grid.params.sigma
-        )
+        gamma_bulk = self.compute_bulk_route_surface_tension(functional, grid.params.eta, sigma=grid.params.sigma)
         gamma_excess = self.compute_excess_adsorption(grid, rho)
 
         return SumRuleResult(

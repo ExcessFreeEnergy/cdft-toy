@@ -41,9 +41,7 @@ class FFTConvolver1D:
             padded_w[self.N_fft - self.center_idx :] = w_arr[: self.center_idx]
             self.fft_weights[key] = fft.fft(padded_w, n=self.N_fft)
 
-    def _convolve_raw(
-        self, f: np.ndarray, key: str, parity_flip: bool = False
-    ) -> np.ndarray:
+    def _convolve_raw(self, f: np.ndarray, key: str, parity_flip: bool = False) -> np.ndarray:
         """Core zero-padded FFT spatial convolution (f * w)(z) = integral f(z') w(z - z') dz'."""
         padded_f = np.zeros(self.N_fft, dtype=float)
         padded_f[: self.N_grid] = f
@@ -80,9 +78,7 @@ class FFTConvolver1D:
 
         return result
 
-    def compute_direct_correlation_convolutions(
-        self, df_dn_dict: dict[str, np.ndarray]
-    ) -> dict[str, np.ndarray]:
+    def compute_direct_correlation_convolutions(self, df_dn_dict: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
         """Compute convolution integrals integral (dPhi/dn_alpha)(z') w_alpha(z' - z) dz'.
 
         Applies odd parity sign flip for vector weight components (v1, v2).

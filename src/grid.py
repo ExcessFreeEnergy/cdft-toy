@@ -70,9 +70,7 @@ class Grid1D:
         self.dz = dz if dz is not None else 0.005 * sigma
 
         if self.dz > 0.01 * sigma + 1e-12:
-            raise ValueError(
-                f"Grid spacing dz={self.dz} exceeds maximum allowable spacing 0.01*sigma ({0.01 * sigma})."
-            )
+            raise ValueError(f"Grid spacing dz={self.dz} exceeds maximum allowable spacing 0.01*sigma ({0.01 * sigma}).")
         if self.Lz <= 0:
             raise ValueError(f"Domain length Lz={self.Lz} must be positive.")
 

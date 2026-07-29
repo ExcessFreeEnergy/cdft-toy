@@ -37,9 +37,7 @@ def main():
     print(f"   Final Residual Norm (R)     : {result.residual:.6e}")
     print(f"   Bulk Density (rho_bulk)     : {params.rho_bulk:.6f}")
     print(f"   Contact Density (rho_wall)  : {result.rho[idx_contact]:.6f}")
-    print(
-        f"   Contact Density Accumulation: {result.rho[idx_contact] / params.rho_bulk:.2f}x bulk"
-    )
+    print(f"   Contact Density Accumulation: {result.rho[idx_contact] / params.rho_bulk:.2f}x bulk")
 
     print("\nStep 05 One-Body Direct Correlation & Picard Solver fully functioning!")
     print("=" * 75)

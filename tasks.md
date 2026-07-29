@@ -116,32 +116,32 @@
 ---
 
 ## Step 10: Dimensional Crossover & Collapse Visualizer Engine
-- [ ] **Objective**: Create a confinement test suite to demonstrate free energy divergence vs stability under dimensional reduction.
-- [ ] **Details**:
+- [x] **Objective**: Create a confinement test suite to demonstrate free energy divergence vs stability under dimensional reduction.
+- [x] **Details**:
   - Set up a slit-pore confinement scenario with adjustable width $L \in [0.1\sigma, 3.0\sigma]$.
   - Force extreme confinement / delta-like density distribution.
   - Compute local free energy density profiles $\Phi(z)$ for `RF`, `WB`, and `WB-Tensor`.
   - Capture divergence spikes ($1/(1-n_3)^2$ blowing up) in standard scalar versions vs well-behaved curves in Tensor FMT.
-- [ ] **Deliverable**: `src/crossover.py` producing comparative collapse/divergence plots.
+- [x] **Deliverable**: `src/crossover.py` producing comparative collapse/divergence plots.
 
 ---
 
 ## Step 11: Real-Time Interactive Solver & Physics Visualization Application (Raylib / Python)
-- [ ] **Objective**: Build a high-performance desktop GUI using Raylib (`pyray`) for interactive problem solving, real-time solver animation, and confinement collapse visualization.
-- [ ] **Details**:
+- [x] **Objective**: Build a high-performance desktop GUI using Raylib (`pyray`) for interactive problem solving, real-time solver animation, and confinement collapse visualization.
+- [x] **Details**:
   - Implement Raylib-based desktop interface:
     - Interactive parameter controls: FMT functional selection (`RF`, `WB`, `WBII`, `WB-Tensor`), bulk packing fraction $\eta \in [0.01, 0.50]$, pore width $L \in [0.1\sigma, 15.0\sigma]$, grid spacing $dz$, and geometry mode (single wall vs slit pore).
     - Real-time plotting viewport: Render continuous density profile $\rho(z)$, weighted densities $n_\alpha(z)$, and direct correlation $c^{(1)}(z)$ curves.
     - Solver controls: Start/Pause/Step iteration loop, live grand potential $\Omega$ convergence graph, and mixing parameter $\alpha_{\text{opt}}$ meter.
     - Dimensional Collapse Mode: Interactive pore width $L$ slider demonstrating divergence in scalar FMT vs stability in Tensorial FMT.
     - Benchmark overlay: Display published Monte Carlo simulation benchmark points ($\eta = 0.4257, 0.4783$).
-- [ ] **Deliverable**: `app_raylib.py` launching a Raylib/Python desktop application.
+- [x] **Deliverable**: `app_raylib.py` launching a Raylib/Python desktop application.
 
 ---
 
 ## Step 12: End-to-End Test Suite & Benchmarking
-- [ ] **Objective**: Automated testing and verification against published Monte Carlo benchmark data.
-- [ ] **Details**:
+- [x] **Objective**: Automated testing and verification against published Monte Carlo benchmark data.
+- [x] **Details**:
   - Add regression test suite comparing computed contact densities against published MC benchmark values (e.g., figure 1 in Roth 2010 for $\eta = 0.4257, 0.4783$).
   - Benchmark performance: Ensure FFT convolutions and Picard iterations complete under 5 seconds for 1000 grid points.
-- [ ] **Deliverable**: Complete, fully documented repository with `pytest` suite passing 100%.
+- [x] **Deliverable**: Complete, fully documented repository with `pytest` suite passing 100%.

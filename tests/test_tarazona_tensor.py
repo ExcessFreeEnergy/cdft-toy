@@ -136,9 +136,7 @@ def test_wb_tensor_solver_convergence_tight_confinement():
     params = PhysicalParameters(eta=0.35)
     grid = Grid1D(params=params, Lz=2.0, dz=0.005)
 
-    solver = RothPicardSolver(
-        grid, functional="WB-TENSOR", alpha_init=0.03, wall_left=0.0, wall_right=2.0
-    )
+    solver = RothPicardSolver(grid, functional="WB-TENSOR", alpha_init=0.03, wall_left=0.0, wall_right=2.0)
     res = solver.solve(max_iter=1000, tol=1e-6)
 
     assert res.converged

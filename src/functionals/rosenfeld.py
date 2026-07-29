@@ -28,9 +28,7 @@ class RosenfeldFunctional(FMTFunctional):
 
         phi1 = -wd.n0 * np.log(one_minus_n3)
         phi2 = (wd.n1 * wd.n2 - wd.v1 * wd.v2) * inv_n3
-        phi3 = (wd.n2**3 - 3.0 * wd.n2 * (wd.v2**2)) * (
-            self.FACTOR_24PI_INV * inv_n3_sq
-        )
+        phi3 = (wd.n2**3 - 3.0 * wd.n2 * (wd.v2**2)) * (self.FACTOR_24PI_INV * inv_n3_sq)
 
         return phi1 + phi2 + phi3
 
@@ -51,9 +49,7 @@ class RosenfeldFunctional(FMTFunctional):
         d_v1 = -wd.v2 * inv_n3
 
         # dPhi / dn2
-        d_n2 = (wd.n1 * inv_n3) + (wd.n2**2 - wd.v2**2) * (
-            self.FACTOR_8PI_INV * inv_n3_sq
-        )
+        d_n2 = (wd.n1 * inv_n3) + (wd.n2**2 - wd.v2**2) * (self.FACTOR_8PI_INV * inv_n3_sq)
 
         # dPhi / dv2
         d_v2 = -(wd.v1 * inv_n3) - (wd.n2 * wd.v2) * (self.FACTOR_4PI_INV * inv_n3_sq)
@@ -61,9 +57,7 @@ class RosenfeldFunctional(FMTFunctional):
         # dPhi / dn3
         term1 = wd.n0 * inv_n3
         term2 = (wd.n1 * wd.n2 - wd.v1 * wd.v2) * inv_n3_sq
-        term3 = (wd.n2**3 - 3.0 * wd.n2 * (wd.v2**2)) * (
-            self.FACTOR_12PI_INV * inv_n3_cube
-        )
+        term3 = (wd.n2**3 - 3.0 * wd.n2 * (wd.v2**2)) * (self.FACTOR_12PI_INV * inv_n3_cube)
         d_n3 = term1 + term2 + term3
 
         return {

@@ -22,12 +22,8 @@ def main():
     print(f"   Sphere Radius (R)        : {params1.radius:.4f}")
     print(f"   Sphere Volume (V_sphere) : {params1.volume:.6f}")
     print("-" * 50)
-    print(
-        f"   Benchmark 1 (Roth Fig 1a) -> eta = {params1.eta:.4f} => rho_bulk = {params1.rho_bulk:.6f}"
-    )
-    print(
-        f"   Benchmark 2 (Roth Fig 1b) -> eta = {params2.eta:.4f} => rho_bulk = {params2.rho_bulk:.6f}"
-    )
+    print(f"   Benchmark 1 (Roth Fig 1a) -> eta = {params1.eta:.4f} => rho_bulk = {params1.rho_bulk:.6f}")
+    print(f"   Benchmark 2 (Roth Fig 1b) -> eta = {params2.eta:.4f} => rho_bulk = {params2.rho_bulk:.6f}")
 
     # 2. Domain Discretization & Grid Setup
     Lz = 10.0  # 10 * sigma

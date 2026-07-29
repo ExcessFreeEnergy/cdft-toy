@@ -71,9 +71,7 @@ class WeightedDensityCalculator:
 
     def __init__(self, grid: Grid1D, apply_endpoint_modification: bool = True) -> None:
         self.grid = grid
-        self.convolver = FFTConvolver1D(
-            grid, apply_endpoint_modification=apply_endpoint_modification
-        )
+        self.convolver = FFTConvolver1D(grid, apply_endpoint_modification=apply_endpoint_modification)
 
     def compute(self, rho: np.ndarray) -> WeightedDensities:
         """Compute spatial weighted densities for a density profile rho(z).

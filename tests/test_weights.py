@@ -28,9 +28,7 @@ def test_analytical_integrals_defaults():
 def test_weight_discretization_and_parity():
     """Verify weight function array symmetry (even for scalars, odd for vectors)."""
     weights = PlanarWeights(radius=0.5)
-    z_w, w_dict = weights.get_grid_and_weights(
-        dz=0.001, apply_endpoint_modification=False
-    )
+    z_w, w_dict = weights.get_grid_and_weights(dz=0.001, apply_endpoint_modification=False)
 
     # Check symmetry across origin z = 0
     center_idx = len(z_w) // 2

@@ -31,9 +31,7 @@ def main():
 
     print("\n1. ROSENFELD FREE ENERGY DENSITY & TOTAL ENERGY:")
     print(f"   Peak Energy Density max(Phi) : {np.max(phi):.6f} kBT / sigma^3")
-    print(
-        f"   Bulk Energy Density Phi_bulk : {phi[grid.num_points // 2]:.6f} kBT / sigma^3"
-    )
+    print(f"   Bulk Energy Density Phi_bulk : {phi[grid.num_points // 2]:.6f} kBT / sigma^3")
     print(f"   Total Excess Free Energy F_ex: {f_ex:.6f} kBT")
 
     # 2. Percus-Yevick Bulk Pressure Check

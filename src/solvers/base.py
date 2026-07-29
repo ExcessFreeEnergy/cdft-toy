@@ -44,9 +44,7 @@ class DFTSolver(ABC):
         """
 
     @abstractmethod
-    def solve_step(
-        self, rho: np.ndarray, alpha: float
-    ) -> tuple[np.ndarray, np.ndarray, float]:
+    def solve_step(self, rho: np.ndarray, alpha: float) -> tuple[np.ndarray, np.ndarray, float]:
         """Execute a single Picard iteration step.
 
         Args:

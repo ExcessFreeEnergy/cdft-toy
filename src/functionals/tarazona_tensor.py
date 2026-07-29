@@ -37,9 +37,7 @@ class WhiteBearTensorFunctional(FMTFunctional):
         term2 = (n1 * n2 - v1 * v2) / one_m_n3
 
         # Tarazona tensorial numerator term: n2^3 - 3*n2*v2^2 + 9*(v2^2*n_m2 - (3/8)*n_m2^3)
-        tensor_num = (
-            (n2**3) - 3.0 * n2 * (v2**2) + 9.0 * ((v2**2) * n_m2 - 0.375 * (n_m2**3))
-        )
+        tensor_num = (n2**3) - 3.0 * n2 * (v2**2) + 9.0 * ((v2**2) * n_m2 - 0.375 * (n_m2**3))
         term3 = tensor_num * self.wb.f4_wb(n3)
 
         return term1 + term2 + term3
@@ -62,12 +60,8 @@ class WhiteBearTensorFunctional(FMTFunctional):
         d_v2 = (-v1 / one_m_n3) + (-6.0 * n2 * v2 + 18.0 * v2 * n_m2) * f4_val
         d_n_m2 = 9.0 * (v2**2 - 1.125 * (n_m2**2)) * f4_val
 
-        tensor_num = (
-            (n2**3) - 3.0 * n2 * (v2**2) + 9.0 * ((v2**2) * n_m2 - 0.375 * (n_m2**3))
-        )
-        d_n3 = (
-            (n0 / one_m_n3) + (n1 * n2 - v1 * v2) / (one_m_n3**2) + tensor_num * df4_val
-        )
+        tensor_num = (n2**3) - 3.0 * n2 * (v2**2) + 9.0 * ((v2**2) * n_m2 - 0.375 * (n_m2**3))
+        d_n3 = (n0 / one_m_n3) + (n1 * n2 - v1 * v2) / (one_m_n3**2) + tensor_num * df4_val
 
         return {
             "n0": d_n0,

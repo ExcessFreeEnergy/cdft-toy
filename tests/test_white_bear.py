@@ -41,9 +41,7 @@ def test_wb_low_density_series_continuity():
     c = 1e-3
 
     # Test f4_WB analytic vs series at cutoff
-    f4_analytic = (c + (1 - c) ** 2 * math.log(1 - c)) / (
-        36 * math.pi * c**2 * (1 - c) ** 2
-    )
+    f4_analytic = (c + (1 - c) ** 2 * math.log(1 - c)) / (36 * math.pi * c**2 * (1 - c) ** 2)
     f4_series = _f4_wb_series(np.array([c]))[0]
     assert math.isclose(f4_analytic, f4_series, rel_tol=1e-6)
 
@@ -53,9 +51,7 @@ def test_wb_low_density_series_continuity():
     assert math.isclose(phi2_analytic, phi2_series, rel_tol=1e-6)
 
     # Test phi3 analytic vs series at cutoff
-    phi3_analytic = (
-        2 * c - 3 * c**2 + 2 * c**3 + 2 * (1 - c) ** 2 * math.log(1 - c)
-    ) / (c**2)
+    phi3_analytic = (2 * c - 3 * c**2 + 2 * c**3 + 2 * (1 - c) ** 2 * math.log(1 - c)) / (c**2)
     phi3_series = _phi3_series(np.array([c]))[0]
     assert math.isclose(phi3_analytic, phi3_series, rel_tol=1e-6)
 

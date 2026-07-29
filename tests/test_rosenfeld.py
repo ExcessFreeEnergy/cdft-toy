@@ -68,9 +68,7 @@ def test_bulk_percus_yevick_pressure_agreement():
         bulk_idx = grid.num_points // 2
         computed_d_n3 = derivatives["n3"][bulk_idx]
 
-        expected_py_pressure = func.compute_bulk_pressure(
-            eta=eta_test, sigma=params.sigma
-        )
+        expected_py_pressure = func.compute_bulk_pressure(eta=eta_test, sigma=params.sigma)
         assert pytest.approx(computed_d_n3, rel=1e-3) == expected_py_pressure
 
 

@@ -90,9 +90,7 @@ class RothPicardSolver(DFTSolver):
         """Compute spatial one-body direct correlation function c^(1)(z) and bulk correlation c1_bulk."""
         wd = self.calc.compute(rho)
         df_dn_dict = self.functional.evaluate_derivatives(wd)
-        c1_conv_dict = self.convolver.compute_direct_correlation_convolutions(
-            df_dn_dict
-        )
+        c1_conv_dict = self.convolver.compute_direct_correlation_convolutions(df_dn_dict)
 
         # Sum convolution components: c^(1)(z) = - sum_alpha conv_alpha(z)
         c1 = np.zeros_like(self.grid.z, dtype=float)
@@ -101,9 +99,7 @@ class RothPicardSolver(DFTSolver):
 
         return c1, self.c1_bulk
 
-    def compute_alpha_opt(
-        self, delta_rho_in: np.ndarray, delta_rho_out: np.ndarray
-    ) -> float:
+    def compute_alpha_opt(self, delta_rho_in: np.ndarray, delta_rho_out: np.ndarray) -> float:
         """Compute Roth's optimal line-search mixing parameter alpha_opt (Roth Eq. 29).
 
         Formula:
@@ -193,9 +189,7 @@ class RothPicardSolver(DFTSolver):
     ) -> SolverResult:
         """Execute adaptive line-search relaxation solver until convergence or max_iter."""
         if rho_init is None:
-            rho_current = self.grid.initial_density_profile(
-                wall_left=self.wall_left, wall_right=self.wall_right
-            )
+            rho_current = self.grid.initial_density_profile(wall_left=self.wall_left, wall_right=self.wall_right)
         else:
             rho_current = rho_init.copy()
 
@@ -205,10 +199,8 @@ class RothPicardSolver(DFTSolver):
         c1_last = np.zeros_like(self.grid.z)
         converged = False
 
-        for k in range(1, max_iter + 1):
-            rho_next, rho_target_cur, c1_last, res, _alpha_used = (
-                self.solve_step_adaptive(rho_current, rho_prev, rho_target_prev)
-            )
+        for _k in range(1, max_iter + 1):
+            rho_next, rho_target_cur, c1_last, res, _alpha_used = self.solve_step_adaptive(rho_current, rho_prev, rho_target_prev)
 
             history_residual.append(res)
 

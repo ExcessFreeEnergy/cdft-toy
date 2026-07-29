@@ -36,13 +36,12 @@ def main():
             status_str = f"{diag.contact_error_rel * 100:.3f}%"
             print(
                 f"{f_name:<12} | {diag.contact_density:<12.6f} | {diag.bulk_pressure:<12.6f} | {status_str:<12} | "
-                f"{diag.surface_tension_spatial:<15.6f} | {diag.surface_tension_bulk_route:<17.6f} | {diag.excess_adsorption:<12.6f}"
+                f"{diag.surface_tension_spatial:<15.6f} | {diag.surface_tension_bulk_route:<17.6f} | "
+                f"{diag.excess_adsorption:<12.6f}"
             )
 
     print("\n" + "=" * 85)
-    print(
-        "Step 09 Thermodynamic Observables & Sum-Rule Validation Engine fully verified!"
-    )
+    print("Step 09 Thermodynamic Observables & Sum-Rule Validation Engine fully verified!")
     print("=" * 85)
 
 
