@@ -51,6 +51,9 @@ class Plotter2D:
         else:
             py = (self.plot_y + self.plot_h) - ((y_val - y_min) / y_span) * self.plot_h
 
+        px = max(self.plot_x, min(self.plot_x + self.plot_w, px))
+        py = max(self.plot_y, min(self.plot_y + self.plot_h, py))
+
         return px, py
 
     def render(
@@ -124,7 +127,8 @@ class Plotter2D:
                 Theme.GRID_LINE,
             )
             tick_str = f"{y_val:.1f}".encode()
-            pr.draw_text(tick_str, int(self.plot_x - 38), int(gy - 5), 11, Theme.TEXT_MUTED)
+            tw = pr.measure_text(tick_str, 11)
+            pr.draw_text(tick_str, int(self.plot_x - tw - 8), int(gy - 5), 11, Theme.TEXT_MUTED)
 
         # Axis Titles
         pr.draw_text(
@@ -142,14 +146,15 @@ class Plotter2D:
             Theme.PRIMARY_BLUE,
         )
 
+        # Enable Scissor Mode for hardware-clipping curve segments to inner plot box
+        pr.begin_scissor_mode(int(self.plot_x), int(self.plot_y), int(self.plot_w), int(self.plot_h))
+
         # 5. Main Primary Curve
         if len(z_arr) > 1 and len(y_arr) == len(z_arr):
             points: list[pr.Vector2] = []
             step = max(1, len(z_arr) // 800)
             for k in range(0, len(z_arr), step):
                 px, py = self.map_to_screen(z_arr[k], y_arr[k], z_min, z_max, y_min, y_max)
-                px = max(self.plot_x, min(self.plot_x + self.plot_w, px))
-                py = max(self.plot_y, min(self.plot_y + self.plot_h, py))
                 points.append(pr.Vector2(px, py))
 
             for idx in range(len(points) - 1):
@@ -167,7 +172,18 @@ class Plotter2D:
                     for i in range(len(sec_pts) - 1):
                         pr.draw_line_v(sec_pts[i], sec_pts[i + 1], sec_color)
 
-        # 7. Legend Box (dynamically sized & right-aligned to prevent text overflow)
+        # 7. Benchmark Points Overlay (if provided)
+        if benchmark_points is not None:
+            bm_z, bm_y = benchmark_points
+            for bz, by in zip(bm_z, bm_y, strict=False):
+                if z_min <= bz <= z_max:
+                    px, py = self.map_to_screen(bz, by, z_min, z_max, y_min, y_max)
+                    pr.draw_circle(int(px), int(py), 4.0, Theme.BENCHMARK_DOT)
+                    pr.draw_circle_lines(int(px), int(py), 4.0, Theme.TEXT_PRIMARY)
+
+        pr.end_scissor_mode()
+
+        # 8. Legend Box (dynamically sized & right-aligned to prevent text overflow)
         legend_items = [(Theme.CURVE_PRIMARY, primary_label)]
         if secondary_curves:
             for _, s_color, s_name in secondary_curves:
@@ -201,17 +217,6 @@ class Plotter2D:
                     11,
                     Theme.TEXT_PRIMARY,
                 )
-
-        # 8. Benchmark Points Overlay (if provided)
-        if benchmark_points is not None:
-            bm_z, bm_y = benchmark_points
-            for bz, by in zip(bm_z, bm_y, strict=False):
-                if z_min <= bz <= z_max:
-                    px, py = self.map_to_screen(bz, by, z_min, z_max, y_min, y_max)
-                    px = max(self.plot_x, min(self.plot_x + self.plot_w, px))
-                    py = max(self.plot_y, min(self.plot_y + self.plot_h, py))
-                    pr.draw_circle(int(px), int(py), 4.0, Theme.BENCHMARK_DOT)
-                    pr.draw_circle_lines(int(px), int(py), 4.0, Theme.TEXT_PRIMARY)
 
         # 9. Interactive Hover Tooltip
         mouse_pos = pr.get_mouse_position()

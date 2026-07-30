@@ -571,7 +571,9 @@ class RaylibCDFTApp:
                 n2_arr = self.wd.n2
                 v2_arr = self.wd.v2
 
-                y_max_plot = max(1.0, np.max(n2_arr) * 1.1)
+                min_val = float(np.min(v2_arr))
+                y_min_plot = min_val * 1.15 if min_val < 0.0 else 0.0
+                y_max_plot = max(1.0, float(np.max(n2_arr)) * 1.15)
                 sec_curves = [
                     (n2_arr, Theme.SUCCESS_GREEN, "n2(z) Surface Density"),
                     (v2_arr, Theme.DANGER_RED, "v2(z) Vector Flux"),
@@ -582,7 +584,7 @@ class RaylibCDFTApp:
                     y_arr=n3_arr,
                     z_min=0.0,
                     z_max=self.Lz,
-                    y_min=0.0,
+                    y_min=y_min_plot,
                     y_max=y_max_plot,
                     x_label="z / sigma",
                     y_label="n_alpha(z)",
@@ -592,7 +594,9 @@ class RaylibCDFTApp:
                 )
             elif self.view_mode_idx == 2:
                 # Excess Free Energy Density Phi(z) View
-                y_max_plot = max(1.0, np.max(self.phi) * 1.2)
+                min_val = float(np.min(self.phi))
+                y_min_plot = min_val * 1.15 if min_val < 0.0 else 0.0
+                y_max_plot = max(1.0, float(np.max(self.phi)) * 1.15)
                 active_fmt = self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
 
                 self.plotter_main.render(
@@ -600,7 +604,7 @@ class RaylibCDFTApp:
                     y_arr=self.phi,
                     z_min=0.0,
                     z_max=self.Lz,
-                    y_min=0.0,
+                    y_min=y_min_plot,
                     y_max=y_max_plot,
                     x_label="z / sigma",
                     y_label="Phi(z)",
