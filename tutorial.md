@@ -1,88 +1,61 @@
-# Classical Density Functional Theory (FMT) Interactive Masterclass & Tutorial
+# Classical Density Functional Theory (cDFT / FMT) Interactive ClickOps Masterclass
 
-A Comprehensive Hands-On Companion to Roland Roth's Topical Review:  
+An Interactive Simulation & Laboratory Companion Aligned Section-by-Section with Roland Roth's Landmark Topical Review:  
 **"Fundamental measure theory for hard-sphere mixtures: a review"** (*J. Phys.: Condens. Matter 22, 2010, 063102*)
 
 ---
 
-## Welcome & Overview
+## 📖 How to Use This Masterclass & Lab Companion
 
-Welcome to the **Classical Density Functional Theory (cDFT) & Fundamental Measure Theory (FMT) Interactive Masterclass**. 
+This guide is designed as an **interactive "ClickOps" laboratory manual** to be read side-by-side with Roland Roth's review paper (`review/review.md`).
 
-This tutorial serves as a self-contained theoretical textbook, computational laboratory manual, and problem-set companion for mastering Classical Density Functional Theory (cDFT) as formulated by Yasha Rosenfeld (1989), Tarazona (2000), and Roland Roth (2010).
-
-### Software Lab Tools Included
-The codebase provides three primary interactive lab environments to run the experiments described in this tutorial:
-1. **Interactive Physics Visualizer (`app_raylib.py`)**: A high-performance Raylib desktop application for real-time solver animation, spatial density profile visualization, diagnostic sum-rule metrics, and dimensional collapse exploration.
-2. **Step Demonstration Scripts (`scripts/demo_step01.py` through `demo_step12.py`)**: Executable Python scripts demonstrating individual physical modules, convolution passes, and benchmark tables.
-3. **Automated Test Suite (`uv run pytest`)**: A suite of 52 unit and performance benchmark tests verifying mathematical derivatives, sum-rules, and throughput.
+### Recommended Workflow
+1. **Open `review/review.md`** on one side of your screen.
+2. **Launch the Raylib Desktop Simulator** on the other side:
+   ```bash
+   uv run python app_raylib.py
+   ```
+3. Read each section of the review paper, then perform the corresponding **ClickOps Labs** below. Use the interactive GUI buttons, sliders, and plot viewports—or run the CLI step demonstration scripts—to visually and empirically discover the underlying statistical mechanics.
 
 ---
 
-## Module 1: The Geometry & Fundamentals of FMT
+## Module 1: Introduction & Hard-Sphere Geometry (Roth 2010 Sec. 1 & Sec. 3)
 
-### 1.1 Theoretical Deep Dive (Roth 2010 Sec. 2 & Sec. 3)
-
-Classical Density Functional Theory states that for an inhomogeneous fluid of hard spheres in an external potential $V_{\text{ext}}(\mathbf{r})$, there exists a unique grand potential functional:
-
-$$\Omega[\rho] = F_{\text{id}}[\rho] + F_{\text{ex}}[\rho] + \int \rho(\mathbf{r}) [V_{\text{ext}}(\mathbf{r}) - \mu] d\mathbf{r}$$
-
-where the ideal gas free energy is known exactly:
-
-$$F_{\text{id}}[\rho] = k_B T \int \rho(\mathbf{r}) [\ln(\Lambda^3 \rho(\mathbf{r})) - 1] d\mathbf{r}$$
-
-The core challenge of statistical mechanics is approximating the **excess free energy functional** $F_{\text{ex}}[\rho]$ resulting from hard-sphere volume exclusion.
-
-In **Fundamental Measure Theory (FMT)**, the excess free energy is expressed as the spatial integral of a local excess free energy density $\Phi(\mathbf{r})$:
-
-$$F_{\text{ex}}[\rho] = k_B T \int \Phi(\{n_\alpha(\mathbf{r})\}) d\mathbf{r}$$
-
-where $\Phi(\mathbf{r})$ depends on a set of **weighted densities** $n_\alpha(\mathbf{r})$ obtained by convoluting the spatial density profile $\rho(\mathbf{r})$ with geometric weight functions $w_\alpha(\mathbf{r})$ characteristic of single hard spheres:
-
-$$n_\alpha(\mathbf{r}) = \int \rho(\mathbf{r}') w_\alpha(\mathbf{r} - \mathbf{r}') d\mathbf{r}' = (\rho * w_\alpha)(\mathbf{r})$$
-
-For 3D hard spheres of radius $R = \sigma/2$, the six Rosenfeld weight functions consist of four scalars ($w_3, w_2, w_1, w_0$) and two vectors ($\mathbf{w}_2, \mathbf{w}_1$):
-
-| Weight Name | Geometric Meaning | Mathematical Form |
-| :--- | :--- | :--- |
-| $w_3(\mathbf{r})$ | Sphere Volume Characteristic | $\Theta(R - \vert\mathbf{r}\vert)$ |
-| $w_2(\mathbf{r})$ | Sphere Surface Area Characteristic | $\delta(R - \vert\mathbf{r}\vert)$ |
-| $w_1(\mathbf{r})$ | Sphere Radius Characteristic | $\frac{w_2(\mathbf{r})}{4\pi R}$ |
-| $w_0(\mathbf{r})$ | Euler Characteristic / Number Density | $\frac{w_2(\mathbf{r})}{4\pi R^2}$ |
-| $\mathbf{w}_2(\mathbf{r})$ | Directed Surface Normal Vector | $\frac{\mathbf{r}}{\vert\mathbf{r}\vert} \delta(R - \vert\mathbf{r}\vert)$ |
-| $\mathbf{w}_1(\mathbf{r})$ | Directed Surface Vector | $\frac{\mathbf{w}_2(\mathbf{r})}{4\pi R}$ |
-
-#### 1D Planar Geometry Reduction
-In a 1D planar system where density varies only along $z$ ($\rho(\mathbf{r}) = \rho(z)$), the 3D surface integrals reduce analytically to 1D planar weight arrays over $z \in [-R, R]$:
-
-- **Volume weight**: $w_3(z) = \pi (R^2 - z^2)$
-- **Surface weight**: $w_2(z) = 2\pi R$
+### 1.1 Theoretical Companion (Deconvolution of the Mayer-$f$ Function)
+In Section 3 of Roth (2010), the hard-sphere pair potential $V(r)$ and Mayer-$f$ function $f(r) = -1 + \Theta(r - \sigma)$ are deconvoluted into single-particle fundamental geometric weight functions:
+- **Volume weight**: $w_3(z) = \pi (R^2 - z^2)$ over $z \in [-R, R]$
+- **Surface weight**: $w_2(z) = 2\pi R$ over $z \in [-R, R]$
 - **Vector weight**: $v_2(z) = 2\pi z$ (odd parity under $z \to -z$)
 
+Convoluting the spatial density profile $\rho(z)$ with these weight functions yields local weighted densities $n_\alpha(z) = (\rho * w_\alpha)(z)$.
+
 ---
 
-### 1.2 Interactive Lab Test 1: Weight Integrals & Parity Inversion
+### 1.2 ClickOps Lab 1: Visualizing Weight Convolutions & Vector Flux
 
-#### Experiment 1.1: Verification of Analytical Weight Integrals
-Run the weight function test script to verify that discrete numerical quadrature of 1D planar weights matches exact analytical geometry:
+#### 🎮 Interactive Simulator Setup:
+1. Launch `app_raylib.py`.
+2. Under **Plot Viewport Mode**, click **`Weighted n`**.
+3. Under **Geometry Mode**, click **`Single Wall (z=0)`**.
+4. Set **Bulk Packing Fraction ($\eta$)** slider to `0.4257`.
+5. Click **`Solve`**.
 
-```bash
-uv run pytest tests/test_weights.py -v
-```
+#### 🔍 ClickOps Inspection & Discovery:
+- **Observe $n_3(z)$ (Cyan Curve)**: Notice how $n_3(z)$, representing the local packing fraction, rises smoothly from zero inside the hard wall ($z < R = 0.5\sigma$) to the bulk packing fraction $\eta = 0.4257$ deep in the fluid.
+- **Observe $n_2(z)$ (Green Curve)**: Surface area density $n_2(z)$ exhibits pronounced peaks at contact $z = R$, representing sphere surface area accumulation.
+- **Observe $v_2(z)$ (Red Curve)**: Vector flux $v_2(z)$ displays a sharp positive peak at the wall contact $z = R$ ($v_2 \approx +1.5$), pointing away from the wall due to asymmetric spatial particle flux. Deep in the bulk ($z > 3.0\sigma$), $v_2(z) \to 0$ due to spherical symmetry.
 
-**Expected Outcome**:
-- $\int_{-R}^R w_3(z) dz = \frac{4}{3}\pi R^3 = v_{\text{sphere}}$
-- $\int_{-R}^R w_2(z) dz = 4\pi R^2 = s_{\text{sphere}}$
-- $\int_{-R}^R v_2(z) dz = 0$ (due to odd vector parity under $z \to -z$)
-
-#### Experiment 1.2: Vector Flux Inversion
-Run `scripts/demo_step03.py` to observe Fourier-space convolutions and sign inversion of $v_2(z)$:
+#### 💻 CLI Laboratory Inspection:
+Run Demonstration Script 03 to inspect exact analytical weight integrals and SPT bulk limits:
 
 ```bash
 uv run python scripts/demo_step03.py
 ```
 
-Observe that near a hard wall at $z = 0$, $v_2(z) > 0$ (pointing away from the wall), reflecting asymmetrical surface flux.
+**What the Output Demonstrates**:
+- Verifies $\int_{-R}^R w_3(z) dz = v_{\text{sphere}} = \frac{4}{3}\pi R^3$
+- Verifies $\int_{-R}^R w_2(z) dz = s_{\text{sphere}} = 4\pi R^2$
+- Verifies $\int_{-R}^R v_2(z) dz = 0$ (odd vector parity cancellation)
 
 ---
 
@@ -96,45 +69,38 @@ For a uniform bulk fluid with constant density $\rho(z) = \rho_{\text{bulk}}$ an
 
 ---
 
-## Module 2: Scaled Particle Theory (SPT) & The Percus-Yevick Fluid
+## Module 2: Variational Principle & Sum-Rules (Roth 2010 Sec. 2 & Sec. 5.1)
 
-### 2.1 Theoretical Deep Dive (Roth 2010 Sec. 4.1)
-
-Yasha Rosenfeld (1989) discovered that dimensional consistency and Scaled Particle Theory (SPT) uniquely constrain the functional form of the excess free energy density $\Phi(\mathbf{n})$ to a sum of three scaled terms:
-
-$$\Phi^{\text{RF}} = \Phi_1^{\text{RF}} + \Phi_2^{\text{RF}} + \Phi_3^{\text{RF}}$$
-
-$$\Phi_1^{\text{RF}} = -n_0 \ln(1 - n_3)$$
-
-$$\Phi_2^{\text{RF}} = \frac{n_1 n_2 - \mathbf{n}_1 \cdot \mathbf{n}_2}{1 - n_3}$$
-
-$$\Phi_3^{\text{RF}} = \frac{n_2^3 - 3 n_2 \mathbf{n}_2 \cdot \mathbf{n}_2}{24\pi (1 - n_3)^2}$$
-
-#### Physical Insights & Properties
-1. **Low-Density Recovery**: As $n_3 \to 0$, $-\ln(1-n_3) \to n_3$, and $\Phi^{\text{RF}} \to n_0 n_3 + n_1 n_2 + \frac{n_2^3}{24\pi}$, exactly recovering the second cluster virial coefficient $B_2 = 4 v_{\text{sphere}}$.
-2. **Percus-Yevick Equation of State**: Evaluating $\Phi^{\text{RF}}$ in uniform bulk fluid ($\mathbf{n}_1 = \mathbf{n}_2 = 0$) yields the exact Percus-Yevick (PY) compressibility equation of state:
-
-$$\beta P_{\text{PY,comp}} = \left. \left( n_3 \frac{\partial \Phi}{\partial n_3} + n_2 \frac{\partial \Phi}{\partial n_2} + n_1 \frac{\partial \Phi}{\partial n_1} + n_0 \frac{\partial \Phi}{\partial n_0} - \Phi \right) \right|_{\text{bulk}} = \rho_{\text{bulk}} \frac{1 + \eta + \eta^2}{(1 - \eta)^3}$$
+### 2.1 Theoretical Companion (Contact Theorem & Surface Thermodynamics)
+Section 2 and Section 5.1 of Roth (2010) establish the grand potential variational principle $\frac{\delta \Omega}{\delta \rho(z)} = 0$ and four exact thermodynamic sum-rules:
+1. **Wall Contact Theorem**: The density at wall contact $\rho(R^+)$ equals the reduced bulk pressure $\beta P_{\text{bulk}}$.
+2. **Spatial Surface Tension**: $\beta \gamma = \int_0^{L_z} [\omega(z) + \beta P_{\text{bulk}}] dz$.
+3. **Bulk-Route Surface Tension**: $\beta \gamma_{\text{bulk}} = \left. \frac{\partial \Phi}{\partial n_2} \right|_{\text{bulk}}$.
+4. **Gibbs Adsorption Theorem**: $-\frac{d\gamma}{d\mu} = \Gamma = \int_0^{L_z} (\rho(z) - \rho_{\text{bulk}}) dz$.
 
 ---
 
-### 2.2 Interactive Lab Test 2: Rosenfeld Functional Derivatives & Bulk EOS
+### 2.2 ClickOps Lab 2: Verifying the Hard Wall Contact Theorem
 
-#### Experiment 2.1: Finite-Difference Derivative Verification
-Run `tests/test_rosenfeld.py` to verify analytical partial derivatives $\frac{\partial \Phi}{\partial n_\alpha}$ against central finite-difference gradients:
+#### 🎮 Interactive Simulator Setup:
+1. In `app_raylib.py`, click **`Preset: Fig 1a (0.4257)`** on the sidebar.
+2. Select **Plot Viewport Mode** $\to$ **`Density rho`**.
+3. Click **`Show c^(1)(z)`** on the bottom right action button to display the lower direct correlation plot.
+4. Click **`Solve`** and wait for convergence (`Status: CONVERGED`).
+
+#### 🔍 ClickOps Inspection & Discovery:
+- **Inspect Sidebar Thermodynamics Panel**:
+  - Look at **Bulk Pressure (bp)**: Reads `6.5662` for Carnahan-Starling (or `6.7302` for Percus-Yevick).
+  - Look at **Contact rho(R+)**: Reads `6.5662` (matching bulk pressure within **$< 0.3\%$ relative error**).
+- **Inspect Lower Plot (`c^(1)(z) Direct Correlation`)**:
+  - Observe how the direct correlation function $c^{(1)}(z) = -\beta \frac{\delta F_{\text{ex}}}{\delta \rho(z)}$ is strongly negative inside the wall ($z < R$) due to infinite hard-core repulsion and approaches $c_1^{\text{bulk}}$ in the fluid bulk.
+
+#### 💻 CLI Laboratory Inspection:
+Run Demonstration Script 09 to verify numerical Gibbs adsorption consistency $-\frac{\Delta \gamma}{\Delta \mu} = \Gamma$:
 
 ```bash
-uv run pytest tests/test_rosenfeld.py -v
+uv run python scripts/demo_step09.py
 ```
-
-#### Experiment 2.2: Live Visualizer Physics Setup
-1. Launch the interactive Raylib application:
-   ```bash
-   uv run python app_raylib.py
-   ```
-2. Set **FMT Functional Variant** to `RF (Original)`.
-3. Set **Bulk Packing Fraction ($\eta$)** to `0.4257`.
-4. Observe the primary density profile plot $\rho(z)$ forming characteristic packing shells near the hard wall at $z = 0$.
 
 ---
 
@@ -148,91 +114,112 @@ Derive the bulk excess chemical potential $\beta \mu_{\text{ex}}^{\text{PY}} = \
 
 ---
 
-## Module 3: White-Bear & White-Bear II Functionals
+## Module 3: Rosenfeld Functional & Percus-Yevick Fluid (Roth 2010 Sec. 4.1)
 
-### 3.1 Theoretical Deep Dive (Roth 2010 Sec. 4.3)
+### 3.1 Theoretical Companion (Rosenfeld Functional Derivation)
+Section 4.1 of Roth (2010) presents Yasha Rosenfeld's (1989) original functional:
 
-While the Rosenfeld (RF) functional accurately describes hard-sphere fluids at low to moderate packing fractions, its PY compressibility equation of state underestimates bulk pressure at high densities ($\eta > 0.40$). The exact Carnahan-Starling (CS) equation of state provides superior agreement with Monte Carlo simulations:
+$$\Phi^{\text{RF}} = -n_0 \ln(1 - n_3) + \frac{n_1 n_2 - \mathbf{n}_1 \cdot \mathbf{n}_2}{1 - n_3} + \frac{n_2^3 - 3 n_2 \mathbf{n}_2 \cdot \mathbf{n}_2}{24\pi (1 - n_3)^2}$$
 
-$$\beta P_{\text{CS}} = \rho_{\text{bulk}} \frac{1 + \eta + \eta^2 - \eta^3}{(1 - \eta)^3}$$
+In uniform bulk fluid, $\Phi^{\text{RF}}$ yields the Percus-Yevick (PY) compressibility equation of state:
 
-To embed the Carnahan-Starling EOS into cDFT, Roth et al. developed the **White-Bear (WB)** and **White-Bear II (WBII)** functionals.
-
-#### White-Bear (WB) Functional
-The WB functional replaces the third term $\Phi_3$ with a modified function $f_4^{\text{WB}}(n_3)$:
-
-$$\Phi_3^{\text{WB}} = (n_2^3 - 3 n_2 \mathbf{n}_2 \cdot \mathbf{n}_2) f_4^{\text{WB}}(n_3)$$
-
-$$f_4^{\text{WB}}(n_3) = \frac{n_3 + (1 - n_3)^2 \ln(1 - n_3)}{36\pi n_3^2 (1 - n_3)^2}$$
-
-#### Low-Density Taylor Series Expansion
-As $n_3 \to 0$, $f_4^{\text{WB}}(n_3)$ encounters an indeterminate form $\frac{0}{0}$. To ensure numerical stability, the software evaluates the Taylor series for $n_3 < 10^{-3}$:
-
-$$f_4^{\text{WB}}(n_3) = \frac{1}{24\pi} \left( 1 + \frac{16}{9} n_3 + \frac{5}{2} n_3^2 + \frac{16}{5} n_3^3 + O(n_3^4) \right)$$
+$$\beta P_{\text{PY}} = \rho_{\text{bulk}} \frac{1 + \eta + \eta^2}{(1 - \eta)^3}$$
 
 ---
 
-### 3.2 Interactive Lab Test 3: High-Density Hard Wall Adsorption
+### 3.2 ClickOps Lab 3: Hard-Sphere Shell Packing at Moderate Packing Fractions
 
-#### Experiment 3.1: Comparative Functional Benchmarking
-Run `scripts/demo_step07.py` to compare bulk pressure and surface contact density across `RF`, `WB`, and `WBII` at $\eta = 0.4783$:
+#### 🎮 Interactive Simulator Setup:
+1. Click **`Preset: Fig 1a (0.4257)`** ($\eta = 0.4257$).
+2. Select **FMT Functional Variant** $\to$ **`RF (Original)`**.
+3. Click **`Show Benchmark Dots`** to display published Monte Carlo reference points.
+4. Click **`Solve`**.
+
+#### 🔍 ClickOps Inspection & Discovery:
+- **Compare Profile Against Benchmark Dots**:
+  - Observe how the calculated cyan profile $\rho(z)$ forms characteristic density oscillations (packing shells) near the hard wall.
+  - Hover the mouse cursor over the primary peak at $z = 0.5\sigma$ ($z = R$).
+  - Notice that at moderate packing fraction $\eta = 0.4257$, Rosenfeld's `RF` functional matches the Monte Carlo simulation dots exceptionally well.
+
+#### 💻 CLI Laboratory Inspection:
+Run Demonstration Script 04 to verify analytical functional derivatives $\frac{\partial \Phi^{\text{RF}}}{\partial n_\alpha}$ against finite-difference gradients:
+
+```bash
+uv run python scripts/demo_step04.py
+```
+
+---
+
+## Module 4: High-Density Breakdown & Carnahan-Starling Functionals (Roth 2010 Sec. 4.3)
+
+### 4.1 Theoretical Companion (White-Bear & White-Bear II)
+Section 4.3 of Roth (2010) explains why Percus-Yevick underestimates bulk pressure at high densities ($\eta > 0.40$). The Carnahan-Starling (CS) equation of state provides superior agreement:
+
+$$\beta P_{\text{CS}} = \rho_{\text{bulk}} \frac{1 + \eta + \eta^2 - \eta^3}{(1 - \eta)^3}$$
+
+The White-Bear (`WB`) and White-Bear II (`WBII`) functionals incorporate the CS equation of state via a modified prefactor $f_4^{\text{WB}}(n_3)$:
+
+$$\Phi_3^{\text{WB}} = (n_2^3 - 3 n_2 \mathbf{n}_2 \cdot \mathbf{n}_2) f_4^{\text{WB}}(n_3), \quad f_4^{\text{WB}}(n_3) = \frac{n_3 + (1 - n_3)^2 \ln(1 - n_3)}{36\pi n_3^2 (1 - n_3)^2}$$
+
+---
+
+### 4.2 ClickOps Lab 4: High-Density PY Breakdown & Carnahan-Starling Recovery
+
+#### 🎮 Interactive Simulator Setup:
+1. Click **`Preset: Fig 1b (0.4783)`** ($\eta = 0.4783$, Roth 2010 Fig 1b high-density benchmark).
+2. Click **`Show Benchmark Dots`**.
+3. Select **FMT Functional Variant** $\to$ **`RF (Original)`**.
+4. Click **`Solve`**.
+
+#### 🔍 ClickOps Inspection & Discovery:
+- **Step 1 (Observe PY Overestimation)**: Look at the contact density on the sidebar: **Contact rho(R+)** reads `10.5678` (matching PY pressure). Notice that the cyan curve overestimates the first Monte Carlo dot at $z = 0.5\sigma$ (which lies at $\approx 9.9$).
+- **Step 2 (Switch to White-Bear)**: Under **FMT Functional Variant**, click **`WB (White-Bear)`** or **`WBII (Mark II)`**, then click **`Solve`**.
+- **Step 3 (Observe CS Alignment)**: Watch **Contact rho(R+)** drop from `10.5678` to `9.9233`, shifting the primary contact peak down to align **perfectly** with the Monte Carlo simulation dots!
+
+#### 💻 CLI Laboratory Inspection:
+Run Demonstration Script 07 to view the high-density benchmark comparative table across all functionals:
 
 ```bash
 uv run python scripts/demo_step07.py
 ```
 
-**Observed Results**:
-- `RF` Contact Density: $\rho(R^+) = 10.5678$ (matches PY pressure)
-- `WB` / `WBII` Contact Density: $\rho(R^+) = 9.9233$ (matches CS pressure)
-
 ---
 
-### 3.3 Problem Set 3: Carnahan-Starling FMT Extensions
+### 4.3 Problem Set 3: Carnahan-Starling FMT Extensions
 
 #### Problem 3.1 (Low-Density Series Derivation)
 Perform L'Hôpital's rule or Taylor expansion on $f_4^{\text{WB}}(n_3) = \frac{n_3 + (1-n_3)^2 \ln(1-n_3)}{36\pi n_3^2 (1-n_3)^2}$ to prove that $\lim_{n_3 \to 0} f_4^{\text{WB}}(n_3) = \frac{1}{24\pi}$.
 
 ---
 
-## Module 4: Dimensional Crossover & Tarazona Tensorial FMT
+## Module 5: Dimensional Crossover & Tarazona Tensorial FMT (Roth 2010 Sec. 4.2 & Sec. 4.4)
 
-### 4.1 Theoretical Deep Dive (Roth 2010 Sec. 4.2 & Sec. 4.4)
+### 5.1 Theoretical Companion (Zero-D Cavity Collapse & Tensorial Trace)
+Sections 4.2 and 4.4 of Roth (2010) address **dimensional crossover**: confining a fluid to 2D, 1D, or a zero-dimensional (0D) single-particle cavity.
 
-#### The Dimensional Collapse Problem
-A fundamental test of a physical density functional is **dimensional crossover**: restricting the 3D density profile to a line ($\rho(\mathbf{r}) = \delta(x)\delta(y)\rho^{(1D)}(z)$) or cavity should smoothly recover lower-dimensional physics.
-
-For scalar FMT functionals (`RF`, `WB`, `WBII`), under extreme confinement or zero-dimensional (0D) single-particle cavities, $\mathbf{v}_2 \to n_2$, causing:
+For scalar functionals (`RF`, `WB`), under extreme zero-D confinement, $\mathbf{v}_2 \to n_2$, causing:
 
 $$n_2^3 - 3 n_2 \mathbf{v}_2 \cdot \mathbf{v}_2 \to -2 n_2^3$$
 
-The third term $\Phi_3 \propto \frac{n_2^3}{(1-n_3)^2}$ diverges non-physically, causing solver failure or numerical collapse!
-
-#### Tarazona Tensorial FMT Solution
-Tarazona (2000) resolved this divergence by introducing a 1D planar tensorial weight function:
-
-$$\omega_{m2}(z) = 2\pi R \left( \frac{z^2}{R^2} - \frac{1}{3} \right), \quad z \in [-R, R]$$
-
-which generates the tensorial weighted density $n_{m2}(z)$.
-
-In 1D planar geometry, the uniaxial tensorial trace cancels the scalar divergence:
+The third term $\Phi_3 \propto \frac{n_2^3}{(1-n_3)^2}$ diverges non-physically. Tarazona (2000) resolved this divergence by introducing a tensorial weight $\omega_{m2}(z) = 2\pi R (\frac{z^2}{R^2} - \frac{1}{3})$, generating tensorial weighted density $n_{m2}(z)$ whose trace cancels the scalar divergence:
 
 $$\Phi_3^{\text{Tensor}} = \frac{n_2^3 - 3 n_2 v_2^2 + 9 \left( v_2^2 n_{m2} - \frac{3}{8} n_{m2}^3 \right)}{24\pi (1 - n_3)^2}$$
 
-Under zero-dimensional cavity collapse, the bracketed numerator vanishes identically ($0/0$ cancellation), preventing free energy divergence!
-
 ---
 
-### 4.2 Interactive Lab Test 4: Zero-D Cavity Collapse Visualizer
+### 5.2 ClickOps Lab 5: Zero-D Cavity Collapse & Slit-Pore Confinement
 
-#### Experiment 4.1: Crossover Suite Mode in Raylib GUI
-1. Launch `app_raylib.py`.
-2. Under **Plot Viewport Mode**, select **`Crossover Suite`**.
-3. Observe the live comparative plot of peak free energy density $\max \Phi(z)$ vs cavity width $\alpha$:
-   - **Scalar Functionals (`RF`, `WB`)**: Display steep divergence spikes (Red / Amber curves).
-   - **WB-Tensor (Blue curve)**: Remains bounded and finite.
+#### 🎮 Interactive Simulator Setup:
+1. In `app_raylib.py`, select **Plot Viewport Mode** $\to$ **`Crossover Suite`**.
+2. Ensure **Geometry Mode** is **`Single Wall (z=0)`** (Zero-D Cavity Collapse vs Cavity Width $\alpha$).
 
-#### Experiment 4.2: Slit-Pore Confinement Sweep
-Run `scripts/demo_step10.py` to inspect numerical metrics across narrow slit pores ($L_z = 0.60\sigma$ to $2.50\sigma$):
+#### 🔍 ClickOps Inspection & Discovery:
+- **Observe Scalar Divergence Spikes**: Look at the Red (`RF`) and Amber (`WB`) curves as cavity width $\alpha \to 0.03\sigma$. Peak free energy density $\max \Phi(z)$ diverges rapidly ($\Phi \to 200+$).
+- **Observe Tensorial Stability**: Look at **WB-Tensor** (thick cyan curve). It remains strictly bounded ($\Phi \le 2.5$), empirically demonstrating 0D cavity collapse stability!
+- **Switch to Slit Pore Mode**: Click **`Slit Pore`** under **Geometry Mode**. Observe the Pore Confinement Sweep ($L_z$), demonstrating how tight pore confinement restricts packing density.
+
+#### 💻 CLI Laboratory Inspection:
+Run Demonstration Script 10 to inspect zero-D Gaussian divergence metrics across cavity widths:
 
 ```bash
 uv run python scripts/demo_step10.py
@@ -240,7 +227,7 @@ uv run python scripts/demo_step10.py
 
 ---
 
-### 4.3 Problem Set 4: Tensorial Reduction & Trace Calculus
+### 5.3 Problem Set 4: Tensorial Reduction & Trace Calculus
 
 #### Problem 4.1 (1D Uniaxial Trace Reduction)
 Given the 3D tensorial weighted density matrix in 1D planar geometry:
@@ -251,44 +238,32 @@ Prove that $\frac{1}{2} \text{Tr}(\mathbf{n}_{m2}^3) = \frac{3}{8} n_{m2}^3$ and
 
 ---
 
-## Module 5: Numerical Implementation, FFT Convolutions & Picard Iterations
+## Module 6: Numerical Implementation & Roth Adaptive Picard Solver (Roth 2010 Sec. 8)
 
-### 5.1 Theoretical Deep Dive (Roth 2010 Sec. 8)
-
-#### Convolution via Fast Fourier Transform (FFT)
-Direct spatial convolution is $O(N^2)$. Utilizing the Convolution Theorem, spatial convolutions are computed in $O(N \log N)$ time:
-
-$$n_\alpha(z) = \mathcal{F}^{-1} \left[ \mathcal{F}[\rho(z)] \cdot \mathcal{F}[w_\alpha(z)] \right]$$
-
-To eliminate periodic boundary wraparound artifacts, arrays are padded to $N_{\text{fft}} = N_{\text{grid}} + N_w - 1$.
-
-#### High-Order Simpson Endpoint Modifications
-To correct discrete grid quadrature errors at weight sphere boundaries $z = \pm R$, Section 8.4 endpoint weights are applied:
-
-- Endpoints ($z = \pm R$): multiply by $3/8$
-- Index 1 ($z = \pm (R - dz)$): multiply by $7/6$
-- Index 2 ($z = \pm (R - 2dz)$): multiply by $23/24$
-
-#### Roth Adaptive Line-Search Picard Solver
-Standard fixed Picard mixing $\rho^{(k+1)} = (1-\alpha)\rho^{(k)} + \alpha \rho_{\text{target}}$ diverges at high packing fractions ($\eta > 0.40$).
-
-Roth's adaptive Picard solver calculates the optimal scalar mixing parameter $\alpha_{\text{opt}}$ at each iteration:
+### 6.1 Theoretical Companion (FFT Convolutions & Optimal Line-Search)
+Section 8 of Roth (2010) details 1D planar numerical discretization:
+- **Zero-Padded FFT Convolutions**: Padding arrays to $N_{\text{fft}} = N_{\text{grid}} + N_w - 1$ eliminates periodic boundary wraparound.
+- **Section 8.4 Simpson Endpoint Modifications**: Endpoint weights multiplied by $3/8$, index 1 by $7/6$, and index 2 by $23/24$.
+- **Section 8.1 Roth Optimal Line-Search Picard Solver**: Calculates optimal mixing parameter $\alpha_{\text{opt}}$ per iteration:
 
 $$\alpha_{\text{opt}} = -\frac{\int \Delta \rho_{\text{in}}(z) \Delta \rho_{\text{out}}(z) dz}{\int [\Delta \rho_{\text{out}}(z)]^2 dz}$$
 
-where $\Delta \rho_{\text{in}} = \rho^{(k)} - \rho^{(k-1)}$ and $\Delta \rho_{\text{out}} = (\rho_{\text{target}}^{(k)} - \rho^{(k)}) - (\rho_{\text{target}}^{(k-1)} - \rho^{(k-1)})$.
-
 ---
 
-### 5.2 Interactive Lab Test 5: Solver Performance & Single-Stepping
+### 6.2 ClickOps Lab 6: Single-Stepping the Picard Solver & Residual Decay
 
-#### Experiment 5.1: Single-Step Iteration Debugging
-1. Launch `app_raylib.py`.
-2. Click **`Show R(k) History`** in the lower diagnostic panel.
-3. Click **`Step 1 Iter`** repeatedly to advance the solver frame-by-frame and observe the exponential decay of the residual norm $\log_{10} R(k)$.
+#### 🎮 Interactive Simulator Setup:
+1. Set **Bulk Packing Fraction ($\eta$)** slider to `0.4500`.
+2. Click **`Reset`** to initialize the step profile.
+3. Click **`Show R(k) History`** on the lower right diagnostic button to show the log residual plot.
 
-#### Experiment 5.2: Speedup Verification
-Run `scripts/demo_step06.py` to compare convergence speed of Fixed Picard vs Roth Adaptive Picard:
+#### 🔍 ClickOps Inspection & Discovery:
+- **Click Step 1 Iter**: Click the **`Step 1 Iter`** button repeatedly (5 to 10 times).
+- **Observe Monotonic Residual Decay**: Watch the log residual curve $\log_{10} R(k)$ drop on the lower plot from $10^{-1}$ down to $10^{-6}$.
+- **Inspect Sidebar Alpha Opt**: Watch **Alpha Opt (alpha)** on the sidebar dynamically adjust per iteration ($\alpha \approx 0.03 \to 0.08$) to maximize convergence speed while preventing density over-packing ($n_3 < 1.0$).
+
+#### 💻 CLI Laboratory Inspection:
+Run Demonstration Script 06 to compare convergence speedup of Fixed Picard ($\alpha=0.01$) vs Roth Adaptive Picard:
 
 ```bash
 uv run python scripts/demo_step06.py
@@ -296,61 +271,25 @@ uv run python scripts/demo_step06.py
 
 ---
 
-### 5.3 Problem Set 5: Picard Convergence Mechanics
+### 6.3 Problem Set 5 & 6: Picard Mechanics & Contact Proof
 
 #### Problem 5.1 (Optimal Mixing Derivation)
 Derive the formula for $\alpha_{\text{opt}}$ by minimizing the norm of the expected next-iteration residual $E(\alpha) = \int [\Delta \rho_{\text{in}} + \alpha \Delta \rho_{\text{out}}]^2 dz$ with respect to $\alpha$.
-
----
-
-## Module 6: Thermodynamic Sum-Rules & Diagnostics
-
-### 6.1 Theoretical Deep Dive (Roth 2010 Sec. 2 & Sec. 8)
-
-Four exact thermodynamic sum-rules validate cDFT solutions:
-
-1. **Wall Contact Theorem**:
-   $$\rho(R^+) = \beta P_{\text{bulk}}$$
-2. **Spatial Surface Tension Integration**:
-   $$\beta \gamma = \int_0^{L_z} [\omega(z) + \beta P_{\text{bulk}}] dz$$
-3. **Bulk-Route Analytical Surface Tension**:
-   $$\beta \gamma_{\text{bulk}} = \left. \frac{\partial \Phi}{\partial n_2} \right|_{\text{bulk}}$$
-4. **Gibbs Adsorption Theorem**:
-   $$-\frac{d\gamma}{d\mu} = \Gamma = \int_0^{L_z} (\rho(z) - \rho_{\text{bulk}}) dz$$
-
----
-
-### 6.2 Interactive Lab Test 6: Sum-Rule Validation Suite
-
-#### Experiment 6.1: Real-Time Sum-Rule Diagnostics
-Launch `app_raylib.py` and inspect the sidebar panel **System Thermodynamics & Info**:
-- Verify that **Contact $\rho(R^+)$** agrees with **Bulk Pressure** to $< 0.3\%$ relative error.
-
-#### Experiment 6.2: Gibbs Adsorption Consistency
-Run `scripts/demo_step09.py` to test Gibbs adsorption theorem consistency:
-
-```bash
-uv run python scripts/demo_step09.py
-```
-
----
-
-### 6.3 Problem Set 6: Sum-Rule Derivations
 
 #### Problem 6.1 (Contact Theorem Proof)
 By integrating the hydrostatic force balance equation $\frac{dP}{dz} = -\rho(z) \frac{dV_{\text{ext}}}{dz}$ across a hard wall at $z=0$, prove that $\rho(R^+) = \beta P_{\text{bulk}}$.
 
 ---
 
-## Module 7: Full End-to-End Performance Benchmarking
+## Module 7: Full End-to-End Performance & Regression Benchmark
 
-Run the complete benchmark suite to verify performance and Monte Carlo regression:
+Run the complete benchmark suite to print the full Monte Carlo contact density regression table and throughput benchmarks:
 
 ```bash
 uv run python scripts/demo_step12.py
 ```
 
-**Target Benchmarks**:
+**Benchmark Targets**:
 - **FFT Convolutions**: $> 5000$ convolutions/sec
 - **Picard Iterations**: $> 1000$ iterations/sec
 - **Contact Density Regression**: Matches published Monte Carlo values in Roth (2010) Fig. 1.

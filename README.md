@@ -41,21 +41,19 @@ This software project is built as a complete mathematical implementation of Rola
 
 ---
 
-## 🎓 Interactive Masterclass Companion (`tutorial.md`)
+## 🎓 Interactive ClickOps Masterclass Companion (`tutorial.md`)
 
-The repository includes a comprehensive, self-contained textbook and laboratory companion guide in **[tutorial.md](tutorial.md)**.
+The repository includes a self-contained textbook and **Interactive "ClickOps" Laboratory Companion** in **[tutorial.md](tutorial.md)** designed to be read side-by-side with Roland Roth's review paper (`review/review.md`).
 
-### Masterclass Structure:
-- **Module 1**: Geometry & Fundamentals of FMT (Weight Integrals & Parity).
-- **Module 2**: Scaled Particle Theory & Percus-Yevick Fluid Thermodynamics.
-- **Module 3**: White-Bear & White-Bear II Carnahan-Starling Functionals.
-- **Module 4**: Dimensional Crossover, Slit-Pore Confinement & Tarazona Tensorial FMT.
-- **Module 5**: FFT Convolutions, Endpoint Quadrature & Adaptive Picard Mechanics.
-- **Module 6**: Thermodynamic Sum-Rules, Contact Theorem & Gibbs Adsorption.
+### Section-by-Section ClickOps Labs:
+- **Module 1 (Roth 2010 Sec. 1 & 3)**: Hard-Sphere Geometry & 1D Planar Weight Convolutions ($n_3, n_2, v_2$ vector flux discovery in simulator).
+- **Module 2 (Roth 2010 Sec. 2 & 5.1)**: Variational Principle & Hard Wall Contact Theorem ($\rho(R^+) = \beta P_{\text{bulk}}$ verification).
+- **Module 3 (Roth 2010 Sec. 4.1)**: Rosenfeld Functional & Moderate Density Shell Packing ($\eta = 0.4257$ Monte Carlo alignment).
+- **Module 4 (Roth 2010 Sec. 4.3)**: High-Density PY Breakdown ($\eta = 0.4783$) & Carnahan-Starling Recovery in `WB`/`WBII`.
+- **Module 5 (Roth 2010 Sec. 4.2 & 4.4)**: Dimensional Crossover & Zero-D Cavity Stability in `Crossover Suite` View.
+- **Module 6 (Roth 2010 Sec. 8)**: Single-Stepping the Picard Solver (`Step 1 Iter`), Residual Decay $\log_{10} R(k)$, and $\alpha_{\text{opt}}$.
 - **Module 7**: End-to-End Performance Benchmarks & Monte Carlo Regression.
-- **Module 8**: **Complete Analytical Solutions to Problem Sets 1–6**.
-
-Each module contains **Hands-On Interactive Experiments** runnable directly in the Raylib GUI or via test and demo scripts.
+- **Module 8**: **Complete Step-by-Step Analytical Solutions to Problem Sets 1–6**.
 
 ---
 
