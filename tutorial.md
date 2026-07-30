@@ -92,9 +92,7 @@ Observe that near a hard wall at $z = 0$, $v_2(z) > 0$ (pointing away from the w
 Prove by integration in cylindrical coordinates $(r_\perp, \theta, z)$ that the 3D surface delta weight $w_2(\mathbf{r}) = \delta(R - \vert\mathbf{r}\vert)$ reduces in 1D planar geometry to $w_2(z) = 2\pi R$ for $\vert z\vert \le R$ and $0$ otherwise.
 
 #### Problem 1.2 (Bulk Limits of Weighted Densities)
-For a uniform bulk fluid with constant density $\rho(z) = \rho_{\text{bulk}}$ and packing fraction $\eta = \frac{\pi}{6} \rho_{\text{bulk}} \sigma^3$, evaluate the bulk values of all six weighted densities: $n_3^{\text{bulk}}, n_2^{\text{bulk}}, n_1^{\text{bulk}}, n_0^{\text{bulk}}, v_1^{\text{bulk}}, v_2^{\text{bulk}}$.
-
-*Solutions are provided in Section 8.*
+For a uniform bulk fluid with constant density $\rho(z) = \rho_{\text{bulk}}$ and packing fraction $\eta = \frac{\pi}{6} \rho_{\text{bulk}}\sigma^3$, evaluate the bulk values of all six weighted densities: $n_3^{\text{bulk}}, n_2^{\text{bulk}}, n_1^{\text{bulk}}, n_0^{\text{bulk}}, \mathbf{v}_1^{\text{bulk}}, \mathbf{v}_2^{\text{bulk}}$.
 
 ---
 
@@ -170,7 +168,7 @@ $$f_4^{\text{WB}}(n_3) = \frac{n_3 + (1 - n_3)^2 \ln(1 - n_3)}{36\pi n_3^2 (1 - 
 #### Low-Density Taylor Series Expansion
 As $n_3 \to 0$, $f_4^{\text{WB}}(n_3)$ encounters an indeterminate form $\frac{0}{0}$. To ensure numerical stability, the software evaluates the Taylor series for $n_3 < 10^{-3}$:
 
-$$f_4^{\text{WB}}(n_3) = \frac{1}{24\pi} \left( 1 + \frac{4}{3} n_3 + \frac{3}{2} n_3^2 + \frac{8}{5} n_3^3 + O(n_3^4) \right)$$
+$$f_4^{\text{WB}}(n_3) = \frac{1}{24\pi} \left( 1 + \frac{16}{9} n_3 + \frac{5}{2} n_3^2 + \frac{16}{5} n_3^3 + O(n_3^4) \right)$$
 
 ---
 
@@ -378,18 +376,28 @@ For uniform $\rho(z) = \rho_{\text{bulk}}$:
 
 ### Solution to Problem 2.1 (Bulk PY Pressure Derivation)
 In bulk fluid, $\mathbf{n}_1 = \mathbf{n}_2 = 0$. Substituting $n_0, n_1, n_2, n_3$ as functions of $\eta$:  
-$\Phi_{\text{bulk}}^{\text{RF}} = -\frac{6\eta}{\pi\sigma^3} \ln(1-\eta) + \frac{18\eta^2}{\pi\sigma^3 (1-\eta)} + \frac{36\eta^3}{\pi\sigma^3 (1-\eta)^2}$.  
+$\Phi_{\text{bulk}}^{\text{RF}} = -\frac{6\eta}{\pi\sigma^3} \ln(1-\eta) + \frac{18\eta^2}{\pi\sigma^3 (1-\eta)} + \frac{9\eta^3}{\pi\sigma^3 (1-\eta)^2}$.  
 Differentiating $\beta P = \eta \frac{\partial \Phi}{\partial \eta} - \Phi$ yields:  
 $\beta P_{\text{PY}} = \rho_{\text{bulk}} \frac{1 + \eta + \eta^2}{(1 - \eta)^3}$. $\blacksquare$
 
+### Solution to Problem 2.2 (Bulk Excess Chemical Potential Derivation)
+In bulk fluid, evaluating the four partial derivatives of $\Phi_{\text{bulk}}^{\text{RF}}$:
+- $\frac{\partial \Phi}{\partial n_0} = -\ln(1-\eta)$
+- $R \frac{\partial \Phi}{\partial n_1} = \frac{3\eta}{1-\eta}$
+- $s \frac{\partial \Phi}{\partial n_2} = \frac{3\eta}{1-\eta} + \frac{9\eta^2}{2(1-\eta)^2}$
+- $v \frac{\partial \Phi}{\partial n_3} = \frac{\eta}{1-\eta} + \frac{3\eta^2}{(1-\eta)^2} + \frac{3\eta^3}{(1-\eta)^3}$
+
+Summing these four terms yields:  
+$$\beta \mu_{\text{ex}}^{\text{PY}} = -\ln(1-\eta) + \frac{7\eta}{1-\eta} + \frac{15\eta^2}{2(1-\eta)^2} + \frac{3\eta^3}{(1-\eta)^3} = -\ln(1-\eta) + \frac{\eta(14 - 13\eta + 5\eta^2)}{2(1-\eta)^3}. \quad \blacksquare$$
+
 ### Solution to Problem 3.1 (Low-Density Series Derivation)
-Expand $\ln(1-n_3) = -n_3 - \frac{n_3^2}{2} - \frac{n_3^3}{3} - O(n_3^4)$ for small $n_3$:  
-$(1-n_3)^2 \ln(1-n_3) = (1 - 2n_3 + n_3^2)(-n_3 - \frac{n_3^2}{2} - \frac{n_3^3}{3}) = -n_3 + \frac{3}{2}n_3^2 + \frac{1}{6}n_3^3 + O(n_3^4)$.  
-Numerator: $n_3 + (1-n_3)^2 \ln(1-n_3) = \frac{3}{2}n_3^2 + \frac{1}{6}n_3^3 + O(n_3^4)$.  
-Denominator: $36\pi n_3^2 (1-n_3)^2 = 36\pi n_3^2 (1 - 2n_3 + O(n_3^2))$.  
-Dividing numerator by denominator:  
-$f_4^{\text{WB}}(n_3) = \frac{\frac{3}{2}n_3^2 + \frac{1}{6}n_3^3}{36\pi n_3^2 (1 - 2n_3)} = \frac{1}{24\pi} \left( 1 + \frac{4}{3}n_3 + O(n_3^2) \right)$.  
-Taking $n_3 \to 0$ yields $\frac{1}{24\pi}$. $\blacksquare$
+Using L'Hôpital's rule on $f_4^{\text{WB}}(n_3) = \frac{N(n_3)}{D(n_3)}$:  
+$N(n_3) = n_3 + (1-n_3)^2 \ln(1-n_3)$  
+$D(n_3) = 36\pi n_3^2 (1-n_3)^2$  
+Evaluating second derivatives at $n_3 = 0$:  
+$N''(0) = 3$  
+$D''(0) = 72\pi$  
+Ratio: $\lim_{n_3 \to 0} f_4^{\text{WB}}(n_3) = \frac{N''(0)}{D''(0)} = \frac{3}{72\pi} = \frac{1}{24\pi}$. $\blacksquare$
 
 ### Solution to Problem 4.1 (1D Uniaxial Trace Reduction)
 For $\mathbf{n}_{m2} = n_{m2} \text{diag}(-1/2, -1/2, 1)$:  
@@ -400,7 +408,7 @@ $\mathbf{v}_2 \cdot \mathbf{n}_{m2} \cdot \mathbf{v}_2 = (0, 0, v_2) \cdot (0, 0
 
 ### Solution to Problem 5.1 (Optimal Mixing Derivation)
 Let $E(\alpha) = \int [\Delta \rho_{\text{in}}(z) + \alpha \Delta \rho_{\text{out}}(z)]^2 dz = \int (\Delta \rho_{\text{in}})^2 dz + 2\alpha \int \Delta \rho_{\text{in}} \Delta \rho_{\text{out}} dz + \alpha^2 \int (\Delta \rho_{\text{out}})^2 dz$.  
-To find the minimum, set $\frac{dE}{d\alpha} = 0$:  
+Setting $\frac{dE}{d\alpha} = 0$:  
 $2 \int \Delta \rho_{\text{in}} \Delta \rho_{\text{out}} dz + 2\alpha \int (\Delta \rho_{\text{out}})^2 dz = 0 \implies \alpha_{\text{opt}} = -\frac{\int \Delta \rho_{\text{in}} \Delta \rho_{\text{out}} dz}{\int (\Delta \rho_{\text{out}})^2 dz}$. $\blacksquare$
 
 ### Solution to Problem 6.1 (Contact Theorem Proof)
