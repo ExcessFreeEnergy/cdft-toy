@@ -1,9 +1,13 @@
 # Classical Density Functional Theory (cDFT / FMT) Hard-Sphere Simulator & Interactive Visualizer
 
-A high-performance Python simulation engine, comprehensive tutorial masterclass, and interactive **Raylib Desktop GUI Application** for Classical Density Functional Theory (cDFT) of hard-sphere fluids and mixtures using Fundamental Measure Theory (FMT).
+A high-performance Python simulation engine, comprehensive tutorial guide, and interactive **Raylib Desktop GUI Application** for Classical Density Functional Theory (cDFT) of hard-sphere fluids and mixtures using Fundamental Measure Theory (FMT).
 
 Based on the topical review paper:  
 **Roland Roth (2010)**: *Fundamental measure theory for hard-sphere mixtures: a review*, **Journal of Physics: Condensed Matter** 22, 063102.
+
+---
+
+![Raylib Interactive Solver Screenshot](docs/assets/simulator_preview.png)
 
 ---
 
@@ -41,7 +45,7 @@ This software project is built as a complete mathematical implementation of Rola
 
 ---
 
-## 🎓 Interactive Masterclass Companion (`tutorial.md`)
+## 🎓 Interactive Laboratory Companion (`tutorial.md`)
 
 The repository includes a self-contained textbook and **Interactive Laboratory Companion** in **[tutorial.md](tutorial.md)** designed to be read side-by-side with Roland Roth's topical review (*J. Phys.: Condens. Matter 22, 2010, 063102*).
 
@@ -131,7 +135,7 @@ uv run ruff format --check .
 ```text
 cdft/
 ├── app_raylib.py        # Interactive Raylib 60 FPS Desktop GUI Visualizer & Solver
-├── tutorial.md          # Interactive Masterclass Textbook, Companion Guide & Problem Sets
+├── tutorial.md          # Interactive Tutorial Textbook, Companion Guide & Problem Sets
 ├── pyproject.toml       # Project metadata, dependencies (ruff, pytest, raylib), and linter config
 ├── README.md            # Comprehensive project documentation
 ├── scripts/             # Demonstration scripts for steps 01 through 12

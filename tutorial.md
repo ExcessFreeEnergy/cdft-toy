@@ -1,11 +1,11 @@
-# Classical Density Functional Theory (cDFT / FMT) Interactive Masterclass & Laboratory Guide
+# Classical Density Functional Theory (cDFT / FMT) Interactive Laboratory & Tutorial Guide
 
 An Interactive Simulation & Laboratory Companion Aligned Section-by-Section with Roland Roth's Landmark Topical Review:  
 **"Fundamental measure theory for hard-sphere mixtures: a review"** (*J. Phys.: Condens. Matter 22, 2010, 063102*)
 
 ---
 
-## 📖 How to Use This Masterclass & Lab Companion
+## 📖 How to Use This Tutorial & Lab Companion
 
 This guide serves as an **interactive computational laboratory companion** to be read side-by-side with Roland Roth's review paper.
 
