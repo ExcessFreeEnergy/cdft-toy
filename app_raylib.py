@@ -48,13 +48,30 @@ class RaylibCDFTApp:
         pr.init_window(self.width, self.height, b"Classical DFT (FMT) Physics Visualizer & Solver")
         pr.set_target_fps(60)
 
-        # Plotter viewports
-        self.plotter_main = Plotter2D(360, 45, self.width - 375, 480, title="Density Profile rho(z)")
+        # Automatically default size of app to 90% height and width of monitor
+        mon = pr.get_current_monitor()
+        mon_w = pr.get_monitor_width(mon)
+        mon_h = pr.get_monitor_height(mon)
+        if mon_w > 0 and mon_h > 0:
+            target_w = int(mon_w * 0.90)
+            target_h = int(mon_h * 0.90)
+            pr.set_window_size(target_w, target_h)
+            self.width = target_w
+            self.height = target_h
+
+        # Plotter viewports scaled to window dimensions
+        self.plotter_main = Plotter2D(
+            360,
+            45,
+            max(400, self.width - 375),
+            max(200, self.height - 240),
+            title="Density Profile rho(z)",
+        )
         self.plotter_diag = Plotter2D(
             360,
-            535,
-            self.width - 375,
-            175,
+            self.height - 180,
+            max(400, self.width - 375),
+            170,
             title="Diagnostic Metrics & Contact Theorem",
         )
 

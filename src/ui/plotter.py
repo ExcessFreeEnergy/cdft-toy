@@ -167,32 +167,36 @@ class Plotter2D:
                     for i in range(len(sec_pts) - 1):
                         pr.draw_line_v(sec_pts[i], sec_pts[i + 1], sec_color)
 
-        # 7. Legend Box
-        legend_x = self.plot_x + self.plot_w - 180
-        legend_y = self.plot_y + 10
+        # 7. Legend Box (dynamically sized & right-aligned to prevent text overflow)
         legend_items = [(Theme.CURVE_PRIMARY, primary_label)]
         if secondary_curves:
             for _, s_color, s_name in secondary_curves:
                 legend_items.append((s_color, s_name))
 
         if legend_items:
-            leg_h = 10 + len(legend_items) * 18
-            leg_rect = pr.Rectangle(legend_x, legend_y, 170, leg_h)
-            pr.draw_rectangle_rec(leg_rect, pr.Color(20, 25, 36, 200))
+            max_text_w = max(pr.measure_text(label.encode("utf-8"), 11) for _, label in legend_items)
+            leg_w = max(160.0, float(max_text_w) + 42.0)
+            leg_h = 10.0 + len(legend_items) * 18.0
+
+            legend_x = self.plot_x + self.plot_w - leg_w - 10.0
+            legend_y = self.plot_y + 10.0
+
+            leg_rect = pr.Rectangle(legend_x, legend_y, leg_w, leg_h)
+            pr.draw_rectangle_rec(leg_rect, pr.Color(20, 25, 36, 220))
             pr.draw_rectangle_lines_ex(leg_rect, 1.0, Theme.PANEL_BORDER)
 
             for idx, (l_color, l_name) in enumerate(legend_items):
-                ly = legend_y + 8 + idx * 18
+                ly = legend_y + 8.0 + idx * 18.0
                 pr.draw_line(
-                    int(legend_x + 8),
-                    int(ly + 5),
-                    int(legend_x + 24),
-                    int(ly + 5),
+                    int(legend_x + 8.0),
+                    int(ly + 5.0),
+                    int(legend_x + 24.0),
+                    int(ly + 5.0),
                     l_color,
                 )
                 pr.draw_text(
                     l_name.encode("utf-8"),
-                    int(legend_x + 30),
+                    int(legend_x + 30.0),
                     int(ly),
                     11,
                     Theme.TEXT_PRIMARY,
