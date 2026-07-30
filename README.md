@@ -189,7 +189,3 @@ cdft/
 ## 📜 References
 
 1. **Roth, R. (2010)**. *Fundamental measure theory for hard-sphere mixtures: a review*. Journal of Physics: Condensed Matter, 22(6), 063102.
-2. **Rosenfeld, Y. (1989)**. *Free-energy model for the inhomogeneous hard-sphere fluid mixture and density-functional theory of freezing*. Physical Review Letters, 63(9), 980.
-3. **Tarazona, P. (2000)**. *Density functional for hard spheres in fundamental measure theory*. Physical Review Letters, 84(4), 694.
-4. **Roth, R., Evans, R., Lang, A., & Kahl, G. (2002)**. *Fundamental measure theory for hard-sphere mixtures revisited: the White Bear version*. Journal of Physics: Condensed Matter, 14(46), 12063.
-5. **Hansen, J. P., & McDonald, I. R. (2013)**. *Theory of Simple Liquids* (4th ed.). Academic Press.
