@@ -94,6 +94,38 @@ class CrossoverAnalyzer:
 
         return max_phi_list
 
+    @classmethod
+    def evaluate_zero_d_divergence_all(
+        self,
+        grid: Grid1D,
+        alpha_widths: list[float],
+        functionals: list[str] | None = None,
+        calc: WeightedDensityCalculator | None = None,
+    ) -> dict[str, list[float]]:
+        """Evaluate peak local free energy density max Phi(z) for synthetic zero-D Gaussians across all specified functionals.
+
+        Args:
+            grid: Grid1D spatial domain discretization.
+            alpha_widths: List of Gaussian width parameters alpha_width.
+            functionals: List of functional names (default ["RF", "WB", "WBII", "WB-Tensor"]).
+            calc: Optional WeightedDensityCalculator instance.
+
+        Returns:
+            Dictionary mapping functional name to list of peak local free energy density values max Phi(z).
+        """
+        if functionals is None:
+            functionals = ["RF", "WB", "WBII", "WB-Tensor"]
+
+        if calc is None:
+            calc = WeightedDensityCalculator(grid, apply_endpoint_modification=True)
+
+        res: dict[str, list[float]] = {}
+        for f_name in functionals:
+            func = functional_factory(f_name)
+            res[f_name] = self.evaluate_zero_d_divergence(grid, alpha_widths, func, calc)
+
+        return res
+
     @staticmethod
     def sweep_pore_confinement(
         widths: list[float],
@@ -124,7 +156,7 @@ class CrossoverAnalyzer:
             for f_name in functionals:
                 func = functional_factory(f_name)
                 solver = RothPicardSolver(grid, functional=func, alpha_init=0.03, wall_left=0.0, wall_right=w)
-                res = solver.solve(max_iter=1000, tol=1e-6)
+                res = solver.solve(max_iter=150, tol=1e-5)
 
                 calc = WeightedDensityCalculator(grid, apply_endpoint_modification=True)
                 wd = calc.compute(res.rho)

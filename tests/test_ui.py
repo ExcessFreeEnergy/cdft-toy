@@ -57,3 +57,26 @@ def test_app_diag_view_mode_toggle():
 
     app.diag_view_mode = 1
     assert app.diag_view_mode == 1
+
+
+def test_app_crossover_suite_mode_response():
+    """Verify Crossover Suite view mode initialization, functional switching, and cached data structures."""
+    app = RaylibCDFTApp(width=1280, height=720)
+
+    # Check cached crossover suite structures after rebuild
+    assert hasattr(app, "crossover_zero_d")
+    assert hasattr(app, "crossover_pore_results")
+    assert len(app.crossover_zero_d) == 4
+    assert "RF" in app.crossover_zero_d
+    assert "WB-Tensor" in app.crossover_zero_d
+
+    # Test functional switching updates
+    app.fmt_idx = 3  # Select WB-Tensor
+    app.rebuild_system()
+    assert app.fmt_names[app.fmt_idx] == "WB-Tensor"
+
+    # Test geometry switching updates
+    app.geom_idx = 1  # Select Slit Pore
+    app.rebuild_system()
+    assert app.geom_idx == 1
+    assert len(app.crossover_pore_results["WB-Tensor"]) > 0

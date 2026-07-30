@@ -119,6 +119,22 @@ class RaylibCDFTApp:
 
         self.c1, self.c1_bulk = self.solver.compute_c1(self.rho)
 
+        # Compute and cache crossover suite data
+        self.compute_crossover_suite_data()
+
+    def compute_crossover_suite_data(self) -> None:
+        """Compute and cache Zero-D cavity collapse and pore confinement sweep curves for all functionals."""
+        self.crossover_alphas = np.linspace(0.03, 0.25, 12)
+        self.crossover_zero_d = CrossoverAnalyzer.evaluate_zero_d_divergence_all(
+            self.grid, self.crossover_alphas.tolist(), self.fmt_names, self.calc
+        )
+
+        w_max = max(0.60, min(self.Lz, 2.5))
+        self.crossover_pore_widths = np.linspace(0.30, w_max, 6)
+        self.crossover_pore_results = CrossoverAnalyzer.sweep_pore_confinement(
+            self.crossover_pore_widths.tolist(), eta_bulk=self.eta, functionals=self.fmt_names, dz=max(0.008, self.dz)
+        )
+
     def get_benchmark_points(self):
         """Return benchmark Monte Carlo data points from Roth (2010) Fig. 1 for comparison."""
         if not self.show_benchmark:
@@ -587,33 +603,71 @@ class RaylibCDFTApp:
                     benchmark_points=None,
                 )
             else:
-                # Crossover Suite View: Zero-D Cavity Free Energy Stability
-                alphas = np.linspace(0.02, 0.20, 20)
-                phi_wb_tensor = CrossoverAnalyzer.evaluate_zero_d_divergence(
-                    self.grid, alphas, functional_factory("WB-Tensor"), self.calc
-                )
-                phi_rf = CrossoverAnalyzer.evaluate_zero_d_divergence(self.grid, alphas, functional_factory("RF"), self.calc)
-                phi_wb = CrossoverAnalyzer.evaluate_zero_d_divergence(self.grid, alphas, functional_factory("WB"), self.calc)
+                # Crossover Suite View: Dynamic Zero-D Cavity Collapse or Slit-Pore Confinement Sweep
+                active_fmt = self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
+                color_map = {
+                    "RF": Theme.DANGER_RED,
+                    "WB": Theme.WARNING_AMBER,
+                    "WBII": Theme.SUCCESS_GREEN,
+                    "WB-Tensor": Theme.PRIMARY_BLUE,
+                }
 
-                sec_curves = [
-                    (np.array(phi_rf), Theme.DANGER_RED, "RF Divergence Spike"),
-                    (np.array(phi_wb), Theme.WARNING_AMBER, "WB Scalar Divergence"),
-                ]
-                y_max_crossover = max(10.0, float(np.max(phi_wb_tensor)) * 1.5)
+                if self.geom_idx == 0:
+                    # Single Wall: Zero-D Cavity Collapse vs Cavity Width alpha
+                    primary_y = np.array(self.crossover_zero_d[active_fmt])
+                    sec_curves = []
+                    for f_name in self.fmt_names:
+                        if f_name != active_fmt:
+                            sec_curves.append((np.array(self.crossover_zero_d[f_name]), color_map[f_name], f"{f_name}"))
 
-                self.plotter_main.render(
-                    z_arr=alphas,
-                    y_arr=np.array(phi_wb_tensor),
-                    z_min=0.02,
-                    z_max=0.20,
-                    y_min=0.0,
-                    y_max=y_max_crossover,
-                    x_label="alpha / sigma (Cavity Width)",
-                    y_label="max Phi(z)",
-                    primary_label="WB-Tensor (Bounded Free Energy)",
-                    secondary_curves=sec_curves,
-                    benchmark_points=None,
-                )
+                    # Compute y_max_crossover considering all curves, capped to 200.0 for clean visual scaling
+                    all_vals = [primary_y] + [c[0] for c in sec_curves]
+                    max_val = max(float(np.max(np.nan_to_num(y, nan=0.0, posinf=1e4))) for y in all_vals)
+                    y_max_crossover = min(200.0, max(10.0, max_val * 1.1))
+
+                    self.plotter_main.title = f"Dimensional Crossover: Zero-D Cavity Collapse (Active: {active_fmt})"
+                    self.plotter_main.render(
+                        z_arr=self.crossover_alphas,
+                        y_arr=primary_y,
+                        z_min=float(self.crossover_alphas[0]),
+                        z_max=float(self.crossover_alphas[-1]),
+                        y_min=0.0,
+                        y_max=y_max_crossover,
+                        x_label="alpha / sigma (Cavity Width)",
+                        y_label="max Phi(z)",
+                        primary_label=f"{active_fmt} (Active Functional)",
+                        secondary_curves=sec_curves,
+                        benchmark_points=None,
+                    )
+                else:
+                    # Slit Pore: Pore Confinement Sweep vs Pore Width Lz
+                    pore_phi = {
+                        f_name: np.array([m.max_phi for m in self.crossover_pore_results[f_name]]) for f_name in self.fmt_names
+                    }
+                    primary_y = pore_phi[active_fmt]
+                    sec_curves = []
+                    for f_name in self.fmt_names:
+                        if f_name != active_fmt:
+                            sec_curves.append((pore_phi[f_name], color_map[f_name], f"{f_name}"))
+
+                    all_vals = [primary_y] + [c[0] for c in sec_curves]
+                    max_val = max(float(np.max(np.nan_to_num(y, nan=0.0, posinf=1e4))) for y in all_vals)
+                    y_max_crossover = min(200.0, max(10.0, max_val * 1.1))
+
+                    self.plotter_main.title = f"Dimensional Crossover: Slit-Pore Confinement Sweep (Active: {active_fmt})"
+                    self.plotter_main.render(
+                        z_arr=self.crossover_pore_widths,
+                        y_arr=primary_y,
+                        z_min=float(self.crossover_pore_widths[0]),
+                        z_max=float(self.crossover_pore_widths[-1]),
+                        y_min=0.0,
+                        y_max=y_max_crossover,
+                        x_label="Lz / sigma (Pore Width)",
+                        y_label="max Phi(z)",
+                        primary_label=f"{active_fmt} (Active Functional)",
+                        secondary_curves=sec_curves,
+                        benchmark_points=None,
+                    )
 
             # Render diagnostic plot (c1(z) direct correlation or residual history log10 R(k))
             if self.diag_view_mode == 0:
