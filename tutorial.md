@@ -27,7 +27,7 @@ In Section 3 of Roth (2010), the hard-sphere pair potential $V(r)$ and Mayer-$f$
 - **Surface weight**: $w_2(z) = 2\pi R$ over $z \in [-R, R]$
 - **Vector weight**: $v_2(z) = 2\pi z$ (odd parity under $z \to -z$)
 
-Convoluting the spatial density profile $\rho(z)$ with these weight functions yields local weighted densities $n_\alpha(z) = (\rho * w_\alpha)(z)$.
+Convoluting the spatial density profile $\rho(z)$ with these weight functions yields local weighted densities $n_\alpha(z) = (\rho \ast w_\alpha)(z)$.
 
 ---
 
@@ -53,19 +53,19 @@ uv run python scripts/demo_step03.py
 ```
 
 **What the Output Demonstrates**:
-- Verifies $\int_{-R}^R w_3(z) dz = v_{\text{sphere}} = \frac{4}{3}\pi R^3$
-- Verifies $\int_{-R}^R w_2(z) dz = s_{\text{sphere}} = 4\pi R^2$
-- Verifies $\int_{-R}^R v_2(z) dz = 0$ (odd vector parity cancellation)
+- Verifies $\int_{-R}^R w_3(z) \, dz = v_{\text{sphere}} = \frac{4}{3}\pi R^3$
+- Verifies $\int_{-R}^R w_2(z) \, dz = s_{\text{sphere}} = 4\pi R^2$
+- Verifies $\int_{-R}^R v_2(z) \, dz = 0$ (odd vector parity cancellation)
 
 ---
 
 ### 1.3 Problem Set 1: Geometry & Weight Calculus
 
 #### Problem 1.1 (Analytical Weight Proof)
-Prove by integration in cylindrical coordinates $(r_\perp, \theta, z)$ that the 3D surface delta weight $w_2(\mathbf{r}) = \delta(R - \vert\mathbf{r}\vert)$ reduces in 1D planar geometry to $w_2(z) = 2\pi R$ for $\vert z\vert \le R$ and $0$ otherwise.
+Prove by integration in cylindrical coordinates $(r_\perp, \theta, z)$ that the 3D surface delta weight $w_2(\mathbf{r}) = \delta(R - |\mathbf{r}|)$ reduces in 1D planar geometry to $w_2(z) = 2\pi R$ for $|z| \le R$ and $0$ otherwise.
 
 #### Problem 1.2 (Bulk Limits of Weighted Densities)
-For a uniform bulk fluid with constant density $\rho(z) = \rho_{\text{bulk}}$ and packing fraction $\eta = \frac{\pi}{6} \rho_{\text{bulk}}\sigma^3$, evaluate the bulk values of all six weighted densities: $n_3^{\text{bulk}}, n_2^{\text{bulk}}, n_1^{\text{bulk}}, n_0^{\text{bulk}}, \mathbf{v}_1^{\text{bulk}}, \mathbf{v}_2^{\text{bulk}}$.
+For a uniform bulk fluid with constant density $\rho(z) = \rho_{\text{bulk}}$ and packing fraction $\eta = \frac{\pi}{6} \rho_{\text{bulk}}\sigma^3$, evaluate the bulk values of all six weighted densities: $n_3^{\text{bulk}}$, $n_2^{\text{bulk}}$, $n_1^{\text{bulk}}$, $n_0^{\text{bulk}}$, $\mathbf{v}_1^{\text{bulk}}$, $\mathbf{v}_2^{\text{bulk}}$.
 
 ---
 
@@ -74,9 +74,9 @@ For a uniform bulk fluid with constant density $\rho(z) = \rho_{\text{bulk}}$ an
 ### 2.1 Theoretical Companion (Contact Theorem & Surface Thermodynamics)
 Section 2 and Section 5.1 of Roth (2010) establish the grand potential variational principle $\frac{\delta \Omega}{\delta \rho(z)} = 0$ and four exact thermodynamic sum-rules:
 1. **Wall Contact Theorem**: The density at wall contact $\rho(R^+)$ equals the reduced bulk pressure $\beta P_{\text{bulk}}$.
-2. **Spatial Surface Tension**: $\beta \gamma = \int_0^{L_z} [\omega(z) + \beta P_{\text{bulk}}] dz$.
-3. **Bulk-Route Surface Tension**: $\beta \gamma_{\text{bulk}} = \left. \frac{\partial \Phi}{\partial n_2} \right|_{\text{bulk}}$.
-4. **Gibbs Adsorption Theorem**: $-\frac{d\gamma}{d\mu} = \Gamma = \int_0^{L_z} (\rho(z) - \rho_{\text{bulk}}) dz$.
+2. **Spatial Surface Tension**: $\beta \gamma = \int_0^{L_z} [\omega(z) + \beta P_{\text{bulk}}] \, dz$.
+3. **Bulk-Route Surface Tension**: $\beta \gamma_{\text{bulk}} = \left( \frac{\partial \Phi}{\partial n_2} \right)_{\text{bulk}}$.
+4. **Gibbs Adsorption Theorem**: $-\frac{d\gamma}{d\mu} = \Gamma = \int_0^{L_z} [\rho(z) - \rho_{\text{bulk}}] \, dz$.
 
 ---
 
@@ -110,7 +110,7 @@ uv run python scripts/demo_step09.py
 Using $\Phi^{\text{RF}}_{\text{bulk}} = -n_0 \ln(1 - n_3) + \frac{n_1 n_2}{1 - n_3} + \frac{n_2^3}{24\pi (1 - n_3)^2}$, substitute the bulk weighted densities as functions of $\eta$ and derive the PY bulk pressure $\beta P_{\text{PY,comp}}(\eta)$.
 
 #### Problem 2.2 (Bulk Excess Chemical Potential)
-Derive the bulk excess chemical potential $\beta \mu_{\text{ex}}^{\text{PY}} = \left. \frac{\partial \Phi^{\text{RF}}}{\partial \rho} \right|_{\text{bulk}}$.
+Derive the bulk excess chemical potential $\beta \mu_{\text{ex}}^{\text{PY}} = \left( \frac{\partial \Phi^{\text{RF}}}{\partial \rho} \right)_{\text{bulk}}$.
 
 ---
 
@@ -119,11 +119,15 @@ Derive the bulk excess chemical potential $\beta \mu_{\text{ex}}^{\text{PY}} = \
 ### 3.1 Theoretical Companion (Rosenfeld Functional Derivation)
 Section 4.1 of Roth (2010) presents Yasha Rosenfeld's (1989) original functional:
 
-$$\Phi^{\text{RF}} = -n_0 \ln(1 - n_3) + \frac{n_1 n_2 - \mathbf{n}_1 \cdot \mathbf{n}_2}{1 - n_3} + \frac{n_2^3 - 3 n_2 \mathbf{n}_2 \cdot \mathbf{n}_2}{24\pi (1 - n_3)^2}$$
+$$
+\Phi^{\text{RF}} = -n_0 \ln(1 - n_3) + \frac{n_1 n_2 - \mathbf{n}_1 \cdot \mathbf{n}_2}{1 - n_3} + \frac{n_2^3 - 3 n_2 \mathbf{n}_2 \cdot \mathbf{n}_2}{24\pi (1 - n_3)^2}
+$$
 
 In uniform bulk fluid, $\Phi^{\text{RF}}$ yields the Percus-Yevick (PY) compressibility equation of state:
 
-$$\beta P_{\text{PY}} = \rho_{\text{bulk}} \frac{1 + \eta + \eta^2}{(1 - \eta)^3}$$
+$$
+\beta P_{\text{PY}} = \rho_{\text{bulk}} \frac{1 + \eta + \eta^2}{(1 - \eta)^3}
+$$
 
 ---
 
@@ -155,11 +159,15 @@ uv run python scripts/demo_step04.py
 ### 4.1 Theoretical Companion (White-Bear & White-Bear II)
 Section 4.3 of Roth (2010) explains why Percus-Yevick underestimates bulk pressure at high densities ($\eta > 0.40$). The Carnahan-Starling (CS) equation of state provides superior agreement:
 
-$$\beta P_{\text{CS}} = \rho_{\text{bulk}} \frac{1 + \eta + \eta^2 - \eta^3}{(1 - \eta)^3}$$
+$$
+\beta P_{\text{CS}} = \rho_{\text{bulk}} \frac{1 + \eta + \eta^2 - \eta^3}{(1 - \eta)^3}
+$$
 
 The White-Bear (`WB`) and White-Bear II (`WBII`) functionals incorporate the CS equation of state via a modified prefactor $f_4^{\text{WB}}(n_3)$:
 
-$$\Phi_3^{\text{WB}} = (n_2^3 - 3 n_2 \mathbf{n}_2 \cdot \mathbf{n}_2) f_4^{\text{WB}}(n_3), \quad f_4^{\text{WB}}(n_3) = \frac{n_3 + (1 - n_3)^2 \ln(1 - n_3)}{36\pi n_3^2 (1 - n_3)^2}$$
+$$
+\Phi_3^{\text{WB}} = (n_2^3 - 3 n_2 \mathbf{n}_2 \cdot \mathbf{n}_2) f_4^{\text{WB}}(n_3), \quad f_4^{\text{WB}}(n_3) = \frac{n_3 + (1 - n_3)^2 \ln(1 - n_3)}{36\pi n_3^2 (1 - n_3)^2}
+$$
 
 ---
 
@@ -192,11 +200,15 @@ Sections 4.2 and 4.4 of Roth (2010) address **dimensional crossover**: confining
 
 For scalar functionals (`RF`, `WB`), under extreme zero-D confinement, $\mathbf{v}_2 \to n_2$, causing:
 
-$$n_2^3 - 3 n_2 \mathbf{v}_2 \cdot \mathbf{v}_2 \to -2 n_2^3$$
+$$
+n_2^3 - 3 n_2 \mathbf{v}_2 \cdot \mathbf{v}_2 \to -2 n_2^3
+$$
 
 The third term $\Phi_3 \propto \frac{n_2^3}{(1-n_3)^2}$ diverges non-physically. Tarazona (2000) resolved this divergence by introducing a tensorial weight $\omega_{m2}(z) = 2\pi R (\frac{z^2}{R^2} - \frac{1}{3})$, generating tensorial weighted density $n_{m2}(z)$ whose trace cancels the scalar divergence:
 
-$$\Phi_3^{\text{Tensor}} = \frac{n_2^3 - 3 n_2 v_2^2 + 9 \left( v_2^2 n_{m2} - \frac{3}{8} n_{m2}^3 \right)}{24\pi (1 - n_3)^2}$$
+$$
+\Phi_3^{\text{Tensor}} = \frac{n_2^3 - 3 n_2 v_2^2 + 9 \left( v_2^2 n_{m2} - \frac{3}{8} n_{m2}^3 \right)}{24\pi (1 - n_3)^2}
+$$
 
 ---
 
@@ -228,7 +240,9 @@ Section 8 of Roth (2010) details 1D planar numerical discretization:
 - **Section 8.4 Simpson Endpoint Modifications**: Endpoint weights multiplied by $3/8$, index 1 by $7/6$, and index 2 by $23/24$.
 - **Section 8.1 Roth Optimal Line-Search Picard Solver**: Calculates optimal mixing parameter $\alpha_{\text{opt}}$ per iteration:
 
-$$\alpha_{\text{opt}} = -\frac{\int \Delta \rho_{\text{in}}(z) \Delta \rho_{\text{out}}(z) dz}{\int [\Delta \rho_{\text{out}}(z)]^2 dz}$$
+$$
+\alpha_{\text{opt}} = -\frac{\int \Delta \rho_{\text{in}}(z) \Delta \rho_{\text{out}}(z) \, dz}{\int [\Delta \rho_{\text{out}}(z)]^2 \, dz}
+$$
 
 ---
 
@@ -256,7 +270,7 @@ uv run python scripts/demo_step06.py
 ### 6.3 Problem Set 5 & 6: Picard Mechanics & Contact Proof
 
 #### Problem 5.1 (Optimal Mixing Derivation)
-Derive the formula for $\alpha_{\text{opt}}$ by minimizing the norm of the expected next-iteration residual $E(\alpha) = \int [\Delta \rho_{\text{in}} + \alpha \Delta \rho_{\text{out}}]^2 dz$ with respect to $\alpha$.
+Derive the formula for $\alpha_{\text{opt}}$ by minimizing the norm of the expected next-iteration residual $E(\alpha) = \int [\Delta \rho_{\text{in}} + \alpha \Delta \rho_{\text{out}}]^2 \, dz$ with respect to $\alpha$.
 
 #### Problem 6.1 (Contact Theorem Proof)
 By integrating the hydrostatic force balance equation $\frac{dP}{dz} = -\rho(z) \frac{dV_{\text{ext}}}{dz}$ across a hard wall at $z=0$, prove that $\rho(R^+) = \beta P_{\text{bulk}}$.
@@ -281,11 +295,21 @@ uv run python scripts/demo_step12.py
 ## Module 8: Solutions to Problem Sets
 
 ### Solution to Problem 1.1 (Analytical Weight Proof)
-In cylindrical coordinates $(r_\perp, \theta, z)$, $\mathbf{r}^2 = r_\perp^2 + z^2$.  
-$w_2(z) = \int \delta(R - \sqrt{r_\perp^2 + z^2}) r_\perp dr_\perp d\theta = 2\pi \int_0^\infty \delta(R - \sqrt{r_\perp^2 + z^2}) r_\perp dr_\perp$.  
-Let $u = \sqrt{r_\perp^2 + z^2}$, so $du = \frac{r_\perp}{u} dr_\perp \implies r_\perp dr_\perp = u du$.  
-For $\vert z\vert \le R$, $u$ ranges from $\vert z\vert$ to $\infty$.  
-$w_2(z) = 2\pi \int_{\vert z\vert}^\infty \delta(R - u) u du = 2\pi R$. For $\vert z\vert > R$, the delta function root lies outside the integration range, so $w_2(z) = 0$. $\blacksquare$
+In cylindrical coordinates $(r_\perp, \theta, z)$, $\mathbf{r}^2 = r_\perp^2 + z^2$.
+
+$$
+w_2(z) = \int \delta(R - \sqrt{r_\perp^2 + z^2}) \, r_\perp \, dr_\perp \, d\theta = 2\pi \int_0^\infty \delta(R - \sqrt{r_\perp^2 + z^2}) \, r_\perp \, dr_\perp
+$$
+
+Let $u = \sqrt{r_\perp^2 + z^2}$, so $du = \frac{r_\perp}{u} \, dr_\perp \implies r_\perp \, dr_\perp = u \, du$.
+
+For $|z| \le R$, $u$ ranges from $|z|$ to $\infty$:
+
+$$
+w_2(z) = 2\pi \int_{|z|}^\infty \delta(R - u) \, u \, du = 2\pi R
+$$
+
+For $|z| > R$, the delta function root lies outside the integration range, so $w_2(z) = 0$. $\blacksquare$
 
 ### Solution to Problem 1.2 (Bulk Weighted Densities)
 For uniform $\rho(z) = \rho_{\text{bulk}}$ with sphere radius $R$ and diameter $\sigma = 2R$:
@@ -293,13 +317,20 @@ For uniform $\rho(z) = \rho_{\text{bulk}}$ with sphere radius $R$ and diameter $
 - $n_2^{\text{bulk}} = \rho_{\text{bulk}} s_{\text{sphere}} = 4\pi R^2 \rho_{\text{bulk}} = \frac{3\eta}{R} = \frac{6\eta}{\sigma}$
 - $n_1^{\text{bulk}} = \frac{n_2^{\text{bulk}}}{4\pi R} = R \rho_{\text{bulk}} = \frac{3\eta}{4\pi R^2} = \frac{3\eta}{\pi \sigma^2}$
 - $n_0^{\text{bulk}} = \frac{n_2^{\text{bulk}}}{4\pi R^2} = \rho_{\text{bulk}} = \frac{3\eta}{4\pi R^3} = \frac{6\eta}{\pi \sigma^3}$
-- $v_1^{\text{bulk}} = v_2^{\text{bulk}} = 0$ (due to spherical symmetry in bulk). $\blacksquare$
+- $\mathbf{v}_1^{\text{bulk}} = \mathbf{v}_2^{\text{bulk}} = 0$ (due to spherical symmetry in bulk). $\blacksquare$
 
 ### Solution to Problem 2.1 (Bulk PY Pressure Derivation)
-In bulk fluid, $\mathbf{n}_1 = \mathbf{n}_2 = 0$. Substituting $n_0, n_1, n_2, n_3$ as functions of $\eta$:  
-$\Phi_{\text{bulk}}^{\text{RF}} = -n_0 \ln(1-n_3) + \frac{n_1 n_2}{1-n_3} + \frac{n_2^3}{24\pi (1-n_3)^2} = \rho_{\text{bulk}} \left[ -\ln(1-\eta) + \frac{3\eta}{1-\eta} + \frac{3\eta^2}{2(1-\eta)^2} \right]$.  
-Evaluating $\beta P = \eta \frac{\partial \Phi}{\partial \eta}$ for the excess pressure and adding ideal gas pressure $\rho_{\text{bulk}}$ yields:  
-$$\beta P_{\text{PY,comp}} = \rho_{\text{bulk}} \frac{1 + \eta + \eta^2}{(1 - \eta)^3}. \quad \blacksquare$$
+In bulk fluid, $\mathbf{n}_1 = \mathbf{n}_2 = 0$. Substituting $n_0, n_1, n_2, n_3$ as functions of $\eta$:
+
+$$
+\Phi_{\text{bulk}}^{\text{RF}} = -n_0 \ln(1-n_3) + \frac{n_1 n_2}{1-n_3} + \frac{n_2^3}{24\pi (1-n_3)^2} = \rho_{\text{bulk}} \left[ -\ln(1-\eta) + \frac{3\eta}{1-\eta} + \frac{3\eta^2}{2(1-\eta)^2} \right]
+$$
+
+Evaluating $\beta P = \eta \frac{\partial \Phi}{\partial \eta}$ for the excess pressure and adding ideal gas pressure $\rho_{\text{bulk}}$ yields:
+
+$$
+\beta P_{\text{PY,comp}} = \rho_{\text{bulk}} \frac{1 + \eta + \eta^2}{(1 - \eta)^3}. \quad \blacksquare
+$$
 
 ### Solution to Problem 2.2 (Bulk Excess Chemical Potential)
 Evaluating the partial derivatives of $\Phi^{\text{RF}}$ in uniform bulk fluid:
@@ -308,8 +339,11 @@ Evaluating the partial derivatives of $\Phi^{\text{RF}}$ in uniform bulk fluid:
 - $\frac{\partial \Phi}{\partial n_2} = \frac{n_1}{1-\eta} + \frac{n_2^2}{8\pi (1-\eta)^2} = \frac{3\eta}{4\pi R^2 (1-\eta)} + \frac{9\eta^2}{8\pi R^2 (1-\eta)^2}$
 - $\frac{\partial \Phi}{\partial n_3} = \frac{n_0}{1-\eta} + \frac{n_1 n_2}{(1-\eta)^2} + \frac{n_2^3}{12\pi (1-\eta)^3} = \frac{3\eta}{4\pi R^3 (1-\eta)} + \frac{9\eta^2}{4\pi R^3 (1-\eta)^2} + \frac{9\eta^3}{2\pi R^3 (1-\eta)^3}$
 
-Multiplying each partial derivative by its respective weight integral ($\int w_0 dz = 1, \int w_1 dz = R, \int w_2 dz = 4\pi R^2, \int w_3 dz = \frac{4}{3}\pi R^3$) and summing:  
-$$\beta \mu_{\text{ex}}^{\text{PY}} = -\ln(1-\eta) + \frac{7\eta}{1-\eta} + \frac{15\eta^2}{2(1-\eta)^2} + \frac{3\eta^3}{(1-\eta)^3}. \quad \blacksquare$$
+Multiplying each partial derivative by its respective weight integral ($\int w_0 \, dz = 1, \int w_1 \, dz = R, \int w_2 \, dz = 4\pi R^2, \int w_3 \, dz = \frac{4}{3}\pi R^3$) and summing:
+
+$$
+\beta \mu_{\text{ex}}^{\text{PY}} = -\ln(1-\eta) + \frac{7\eta}{1-\eta} + \frac{15\eta^2}{2(1-\eta)^2} + \frac{3\eta^3}{(1-\eta)^3}. \quad \blacksquare
+$$
 
 ### Solution to Problem 3.1 (Low-Density Series Derivation)
 Using L'Hôpital's rule on $f_4^{\text{WB}}(n_3) = \frac{N(n_3)}{D(n_3)}$:  
@@ -328,14 +362,14 @@ For 1D planar vector $\mathbf{v}_2 = (0, 0, v_2)$:
 $\mathbf{v}_2 \cdot \mathbf{n}_{m2} \cdot \mathbf{v}_2 = (0, 0, v_2) \cdot (0, 0, v_2 n_{m2})^T = v_2^2 n_{m2}$. $\blacksquare$
 
 ### Solution to Problem 5.1 (Optimal Mixing Derivation)
-Let $E(\alpha) = \int [\Delta \rho_{\text{in}}(z) + \alpha \Delta \rho_{\text{out}}(z)]^2 dz = \int (\Delta \rho_{\text{in}})^2 dz + 2\alpha \int \Delta \rho_{\text{in}} \Delta \rho_{\text{out}} dz + \alpha^2 \int (\Delta \rho_{\text{out}})^2 dz$.  
+Let $E(\alpha) = \int [\Delta \rho_{\text{in}}(z) + \alpha \Delta \rho_{\text{out}}(z)]^2 \, dz = \int (\Delta \rho_{\text{in}})^2 \, dz + 2\alpha \int \Delta \rho_{\text{in}} \Delta \rho_{\text{out}} \, dz + \alpha^2 \int (\Delta \rho_{\text{out}})^2 \, dz$.  
 Setting $\frac{dE}{d\alpha} = 0$:  
-$2 \int \Delta \rho_{\text{in}} \Delta \rho_{\text{out}} dz + 2\alpha \int (\Delta \rho_{\text{out}})^2 dz = 0 \implies \alpha_{\text{opt}} = -\frac{\int \Delta \rho_{\text{in}} \Delta \rho_{\text{out}} dz}{\int (\Delta \rho_{\text{out}})^2 dz}$. $\blacksquare$
+$2 \int \Delta \rho_{\text{in}} \Delta \rho_{\text{out}} \, dz + 2\alpha \int (\Delta \rho_{\text{out}})^2 \, dz = 0 \implies \alpha_{\text{opt}} = -\frac{\int \Delta \rho_{\text{in}} \Delta \rho_{\text{out}} \, dz}{\int [\Delta \rho_{\text{out}}]^2 \, dz}$. $\blacksquare$
 
 ### Solution to Problem 6.1 (Contact Theorem Proof)
 The hydrostatic force balance equation for a fluid in an external potential is $\nabla P(\mathbf{r}) = -\rho(\mathbf{r}) \nabla V_{\text{ext}}(\mathbf{r})$.  
 In 1D planar geometry for a hard wall at $z=0$, $V_{\text{ext}}(z) = \infty$ for $z < R$ and $0$ for $z \ge R$.  
 Integrating from $z = 0$ to $z = \infty$:  
-$\int_0^\infty \frac{dP}{dz} dz = P(\infty) - P(0^+) = P_{\text{bulk}} - P(0^+)$.  
+$\int_0^\infty \frac{dP}{dz} \, dz = P(\infty) - P(0^+) = P_{\text{bulk}} - P(0^+)$.  
 The force on the hard wall per unit area is $P(0^+) = k_B T \rho(R^+)$.  
 Since $P(\infty) = P_{\text{bulk}}$ and the wall exerts hard-core repulsion, $\rho(R^+) = \beta P_{\text{bulk}}$. $\blacksquare$
