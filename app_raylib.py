@@ -119,8 +119,20 @@ class RaylibCDFTApp:
 
         self.c1, self.c1_bulk = self.solver.compute_c1(self.rho)
 
-        # Compute and cache crossover suite data
-        self.compute_crossover_suite_data()
+        # Cache thermodynamic diagnostics cleanly
+        self.update_diagnostics_cache()
+
+        # Flag crossover suite data for lazy evaluation on mode selection
+        self.crossover_data_dirty = True
+
+    def update_diagnostics_cache(self) -> None:
+        """Cache thermodynamic sum-rules and diagnostics to prevent 60 FPS per-frame numerical integrations."""
+        self.p_bulk = self.func.compute_bulk_pressure(self.eta, self.params.sigma)
+        self.rho_c = SumRuleDiagnostics.extrapolate_contact_density(self.grid, self.rho)
+        self.gamma_sp = SumRuleDiagnostics.compute_surface_tension(self.grid, self.rho, self.func, self.calc)
+        self.gamma_bulk = SumRuleDiagnostics.compute_bulk_route_surface_tension(self.func, self.eta, self.params.sigma)
+        self.gamma_ex = SumRuleDiagnostics.compute_excess_adsorption(self.grid, self.rho)
+        self.err_contact = abs(self.rho_c - self.p_bulk) / self.p_bulk * 100.0 if self.p_bulk > 0 else 0.0
 
     def compute_crossover_suite_data(self) -> None:
         """Compute and cache Zero-D cavity collapse and pore confinement sweep curves for all functionals."""
@@ -134,6 +146,7 @@ class RaylibCDFTApp:
         self.crossover_pore_results = CrossoverAnalyzer.sweep_pore_confinement(
             self.crossover_pore_widths.tolist(), eta_bulk=self.eta, functionals=self.fmt_names, dz=max(0.008, self.dz)
         )
+        self.crossover_data_dirty = False
 
     def get_benchmark_points(self):
         """Return benchmark Monte Carlo data points from Roth (2010) Fig. 1 for comparison."""
@@ -218,6 +231,7 @@ class RaylibCDFTApp:
         self.n_dict = self.wd.to_dict()
         self.phi = self.func.evaluate_phi(self.wd)
         self.f_ex = self.func.compute_total_free_energy(self.grid, self.wd)
+        self.update_diagnostics_cache()
 
         if self.residual < 1e-6 or self.iteration >= 2000:
             self.is_solving = False
@@ -448,14 +462,6 @@ class RaylibCDFTApp:
             status_n3 = f"OVER-PACKED ({max_n3:.4f})"
 
         fmt_label = self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
-        p_bulk = self.func.compute_bulk_pressure(self.eta, self.params.sigma)
-
-        # Compute live sum-rule diagnostics
-        rho_c = SumRuleDiagnostics.extrapolate_contact_density(self.grid, self.rho)
-        gamma_sp = SumRuleDiagnostics.compute_surface_tension(self.grid, self.rho, self.func, self.calc)
-        gamma_bulk = SumRuleDiagnostics.compute_bulk_route_surface_tension(self.func, self.eta, self.params.sigma)
-        gamma_ex = SumRuleDiagnostics.compute_excess_adsorption(self.grid, self.rho)
-        err_contact = abs(rho_c - p_bulk) / p_bulk * 100.0
 
         status_str = (
             "Solving (Roth Picard)..." if self.is_solving else ("CONVERGED" if 0 < self.residual < 1e-6 else "Ready / Idle")
@@ -468,16 +474,16 @@ class RaylibCDFTApp:
                 Theme.TEXT_PRIMARY,
             ),
             (f"Bulk Density (rho) : {self.params.rho_bulk:.6f}", Theme.TEXT_PRIMARY),
-            (f"Bulk Pressure (bp) : {p_bulk:.4f}", Theme.TEXT_PRIMARY),
+            (f"Bulk Pressure (bp) : {self.p_bulk:.4f}", Theme.TEXT_PRIMARY),
             (
-                f"Contact rho(R+)    : {rho_c:.4f} ({err_contact:.2f}% err)",
-                Theme.SUCCESS_GREEN if err_contact < 0.1 else Theme.TEXT_PRIMARY,
+                f"Contact rho(R+)    : {self.rho_c:.4f} ({self.err_contact:.2f}% err)",
+                Theme.SUCCESS_GREEN if self.err_contact < 0.1 else Theme.TEXT_PRIMARY,
             ),
             (
-                f"Surface Tension bg : {gamma_sp:.4f} (bulk: {gamma_bulk:.4f})",
+                f"Surface Tension bg : {self.gamma_sp:.4f} (bulk: {self.gamma_bulk:.4f})",
                 Theme.TEXT_PRIMARY,
             ),
-            (f"Excess Adsorption G: {gamma_ex:.4f}", Theme.TEXT_PRIMARY),
+            (f"Excess Adsorption G: {self.gamma_ex:.4f}", Theme.TEXT_PRIMARY),
             (f"Solver Iter (k)    : {self.iteration}", Theme.TEXT_PRIMARY),
             (f"Alpha Opt (alpha)  : {self.alpha_used:.4f}", Theme.PRIMARY_BLUE),
             (
@@ -604,6 +610,9 @@ class RaylibCDFTApp:
                 )
             else:
                 # Crossover Suite View: Dynamic Zero-D Cavity Collapse or Slit-Pore Confinement Sweep
+                if getattr(self, "crossover_data_dirty", True):
+                    self.compute_crossover_suite_data()
+
                 active_fmt = self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
                 color_map = {
                     "RF": Theme.DANGER_RED,
