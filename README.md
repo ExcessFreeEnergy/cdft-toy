@@ -41,11 +41,11 @@ This software project is built as a complete mathematical implementation of Rola
 
 ---
 
-## 🎓 Interactive ClickOps Masterclass Companion (`tutorial.md`)
+## 🎓 Interactive Masterclass Companion (`tutorial.md`)
 
-The repository includes a self-contained textbook and **Interactive "ClickOps" Laboratory Companion** in **[tutorial.md](tutorial.md)** designed to be read side-by-side with Roland Roth's review paper (`review/review.md`).
+The repository includes a self-contained textbook and **Interactive Laboratory Companion** in **[tutorial.md](tutorial.md)** designed to be read side-by-side with Roland Roth's review paper (`review/review.md`).
 
-### Section-by-Section ClickOps Labs:
+### Section-by-Section Follow-Along Labs:
 - **Module 1 (Roth 2010 Sec. 1 & 3)**: Hard-Sphere Geometry & 1D Planar Weight Convolutions ($n_3, n_2, v_2$ vector flux discovery in simulator).
 - **Module 2 (Roth 2010 Sec. 2 & 5.1)**: Variational Principle & Hard Wall Contact Theorem ($\rho(R^+) = \beta P_{\text{bulk}}$ verification).
 - **Module 3 (Roth 2010 Sec. 4.1)**: Rosenfeld Functional & Moderate Density Shell Packing ($\eta = 0.4257$ Monte Carlo alignment).

@@ -1,4 +1,4 @@
-# Classical Density Functional Theory (cDFT / FMT) Interactive ClickOps Masterclass
+# Classical Density Functional Theory (cDFT / FMT) Interactive Masterclass & Laboratory Guide
 
 An Interactive Simulation & Laboratory Companion Aligned Section-by-Section with Roland Roth's Landmark Topical Review:  
 **"Fundamental measure theory for hard-sphere mixtures: a review"** (*J. Phys.: Condens. Matter 22, 2010, 063102*)
@@ -7,7 +7,7 @@ An Interactive Simulation & Laboratory Companion Aligned Section-by-Section with
 
 ## 📖 How to Use This Masterclass & Lab Companion
 
-This guide is designed as an **interactive "ClickOps" laboratory manual** to be read side-by-side with Roland Roth's review paper (`review/review.md`).
+This guide is designed as a **hands-on laboratory manual and follow-along companion** to be read side-by-side with Roland Roth's review paper (`review/review.md`).
 
 ### Recommended Workflow
 1. **Open `review/review.md`** on one side of your screen.
@@ -15,7 +15,7 @@ This guide is designed as an **interactive "ClickOps" laboratory manual** to be 
    ```bash
    uv run python app_raylib.py
    ```
-3. Read each section of the review paper, then perform the corresponding **ClickOps Labs** below. Use the interactive GUI buttons, sliders, and plot viewports—or run the CLI step demonstration scripts—to visually and empirically discover the underlying statistical mechanics.
+3. Read each section of the review paper, then perform the corresponding **Hands-On Follow-Along Labs** below. Use the interactive GUI buttons, sliders, and plot viewports—or run the CLI step demonstration scripts—to visually and empirically discover the underlying statistical mechanics.
 
 ---
 
@@ -31,7 +31,7 @@ Convoluting the spatial density profile $\rho(z)$ with these weight functions yi
 
 ---
 
-### 1.2 ClickOps Lab 1: Visualizing Weight Convolutions & Vector Flux
+### 1.2 Follow-Along Lab 1: Visualizing Weight Convolutions & Vector Flux
 
 #### 🎮 Interactive Simulator Setup:
 1. Launch `app_raylib.py`.
@@ -40,7 +40,7 @@ Convoluting the spatial density profile $\rho(z)$ with these weight functions yi
 4. Set **Bulk Packing Fraction ($\eta$)** slider to `0.4257`.
 5. Click **`Solve`**.
 
-#### 🔍 ClickOps Inspection & Discovery:
+#### 🔍 Interactive Inspection & Discovery:
 - **Observe $n_3(z)$ (Cyan Curve)**: Notice how $n_3(z)$, representing the local packing fraction, rises smoothly from zero inside the hard wall ($z < R = 0.5\sigma$) to the bulk packing fraction $\eta = 0.4257$ deep in the fluid.
 - **Observe $n_2(z)$ (Green Curve)**: Surface area density $n_2(z)$ exhibits pronounced peaks at contact $z = R$, representing sphere surface area accumulation.
 - **Observe $v_2(z)$ (Red Curve)**: Vector flux $v_2(z)$ displays a sharp positive peak at the wall contact $z = R$ ($v_2 \approx +1.5$), pointing away from the wall due to asymmetric spatial particle flux. Deep in the bulk ($z > 3.0\sigma$), $v_2(z) \to 0$ due to spherical symmetry.
@@ -80,7 +80,7 @@ Section 2 and Section 5.1 of Roth (2010) establish the grand potential variation
 
 ---
 
-### 2.2 ClickOps Lab 2: Verifying the Hard Wall Contact Theorem
+### 2.2 Follow-Along Lab 2: Verifying the Hard Wall Contact Theorem
 
 #### 🎮 Interactive Simulator Setup:
 1. In `app_raylib.py`, click **`Preset: Fig 1a (0.4257)`** on the sidebar.
@@ -88,7 +88,7 @@ Section 2 and Section 5.1 of Roth (2010) establish the grand potential variation
 3. Click **`Show c^(1)(z)`** on the bottom right action button to display the lower direct correlation plot.
 4. Click **`Solve`** and wait for convergence (`Status: CONVERGED`).
 
-#### 🔍 ClickOps Inspection & Discovery:
+#### 🔍 Interactive Inspection & Discovery:
 - **Inspect Sidebar Thermodynamics Panel**:
   - Look at **Bulk Pressure (bp)**: Reads `6.5662` for Carnahan-Starling (or `6.7302` for Percus-Yevick).
   - Look at **Contact rho(R+)**: Reads `6.5662` (matching bulk pressure within **$< 0.3\%$ relative error**).
@@ -127,7 +127,7 @@ $$\beta P_{\text{PY}} = \rho_{\text{bulk}} \frac{1 + \eta + \eta^2}{(1 - \eta)^3
 
 ---
 
-### 3.2 ClickOps Lab 3: Hard-Sphere Shell Packing at Moderate Packing Fractions
+### 3.2 Follow-Along Lab 3: Hard-Sphere Shell Packing at Moderate Packing Fractions
 
 #### 🎮 Interactive Simulator Setup:
 1. Click **`Preset: Fig 1a (0.4257)`** ($\eta = 0.4257$).
@@ -135,7 +135,7 @@ $$\beta P_{\text{PY}} = \rho_{\text{bulk}} \frac{1 + \eta + \eta^2}{(1 - \eta)^3
 3. Click **`Show Benchmark Dots`** to display published Monte Carlo reference points.
 4. Click **`Solve`**.
 
-#### 🔍 ClickOps Inspection & Discovery:
+#### 🔍 Interactive Inspection & Discovery:
 - **Compare Profile Against Benchmark Dots**:
   - Observe how the calculated cyan profile $\rho(z)$ forms characteristic density oscillations (packing shells) near the hard wall.
   - Hover the mouse cursor over the primary peak at $z = 0.5\sigma$ ($z = R$).
@@ -163,7 +163,7 @@ $$\Phi_3^{\text{WB}} = (n_2^3 - 3 n_2 \mathbf{n}_2 \cdot \mathbf{n}_2) f_4^{\tex
 
 ---
 
-### 4.2 ClickOps Lab 4: High-Density PY Breakdown & Carnahan-Starling Recovery
+### 4.2 Follow-Along Lab 4: High-Density PY Breakdown & Carnahan-Starling Recovery
 
 #### 🎮 Interactive Simulator Setup:
 1. Click **`Preset: Fig 1b (0.4783)`** ($\eta = 0.4783$, Roth 2010 Fig 1b high-density benchmark).
@@ -171,7 +171,7 @@ $$\Phi_3^{\text{WB}} = (n_2^3 - 3 n_2 \mathbf{n}_2 \cdot \mathbf{n}_2) f_4^{\tex
 3. Select **FMT Functional Variant** $\to$ **`RF (Original)`**.
 4. Click **`Solve`**.
 
-#### 🔍 ClickOps Inspection & Discovery:
+#### 🔍 Interactive Inspection & Discovery:
 - **Step 1 (Observe PY Overestimation)**: Look at the contact density on the sidebar: **Contact rho(R+)** reads `10.5678` (matching PY pressure). Notice that the cyan curve overestimates the first Monte Carlo dot at $z = 0.5\sigma$ (which lies at $\approx 9.9$).
 - **Step 2 (Switch to White-Bear)**: Under **FMT Functional Variant**, click **`WB (White-Bear)`** or **`WBII (Mark II)`**, then click **`Solve`**.
 - **Step 3 (Observe CS Alignment)**: Watch **Contact rho(R+)** drop from `10.5678` to `9.9233`, shifting the primary contact peak down to align **perfectly** with the Monte Carlo simulation dots!
@@ -182,13 +182,6 @@ Run Demonstration Script 07 to view the high-density benchmark comparative table
 ```bash
 uv run python scripts/demo_step07.py
 ```
-
----
-
-### 4.3 Problem Set 3: Carnahan-Starling FMT Extensions
-
-#### Problem 3.1 (Low-Density Series Derivation)
-Perform L'Hôpital's rule or Taylor expansion on $f_4^{\text{WB}}(n_3) = \frac{n_3 + (1-n_3)^2 \ln(1-n_3)}{36\pi n_3^2 (1-n_3)^2}$ to prove that $\lim_{n_3 \to 0} f_4^{\text{WB}}(n_3) = \frac{1}{24\pi}$.
 
 ---
 
@@ -207,16 +200,16 @@ $$\Phi_3^{\text{Tensor}} = \frac{n_2^3 - 3 n_2 v_2^2 + 9 \left( v_2^2 n_{m2} - \
 
 ---
 
-### 5.2 ClickOps Lab 5: Zero-D Cavity Collapse & Slit-Pore Confinement
+### 5.2 Follow-Along Lab 5: Zero-D Cavity Collapse & Slit-Pore Confinement
 
 #### 🎮 Interactive Simulator Setup:
 1. In `app_raylib.py`, select **Plot Viewport Mode** $\to$ **`Crossover Suite`**.
 2. Ensure **Geometry Mode** is **`Single Wall (z=0)`** (Zero-D Cavity Collapse vs Cavity Width $\alpha$).
 
-#### 🔍 ClickOps Inspection & Discovery:
+#### 🔍 Interactive Inspection & Discovery:
 - **Observe Scalar Divergence Spikes**: Look at the Red (`RF`) and Amber (`WB`) curves as cavity width $\alpha \to 0.03\sigma$. Peak free energy density $\max \Phi(z)$ diverges rapidly ($\Phi \to 200+$).
 - **Observe Tensorial Stability**: Look at **WB-Tensor** (thick cyan curve). It remains strictly bounded ($\Phi \le 2.5$), empirically demonstrating 0D cavity collapse stability!
-- **Switch to Slit Pore Mode**: Click **`Slit Pore`** under **Geometry Mode**. Observe the Pore Confinement Sweep ($L_z$), demonstrating how tight pore confinement restricts packing density.
+- **Switch to Slit Pore Mode**: Click **`Slit Pore`** under **Geometry Mode**. Observe the Pore Confinement Sweep ($L_z$), demonstrating how tight pore confinement restricts density packing.
 
 #### 💻 CLI Laboratory Inspection:
 Run Demonstration Script 10 to inspect zero-D Gaussian divergence metrics across cavity widths:
@@ -224,17 +217,6 @@ Run Demonstration Script 10 to inspect zero-D Gaussian divergence metrics across
 ```bash
 uv run python scripts/demo_step10.py
 ```
-
----
-
-### 5.3 Problem Set 4: Tensorial Reduction & Trace Calculus
-
-#### Problem 4.1 (1D Uniaxial Trace Reduction)
-Given the 3D tensorial weighted density matrix in 1D planar geometry:
-
-$$\mathbf{n}_{m2}(z) = n_{m2}(z) \begin{pmatrix} -1/2 & 0 & 0 \\ 0 & -1/2 & 0 \\ 0 & 0 & 1 \end{pmatrix}$$
-
-Prove that $\frac{1}{2} \text{Tr}(\mathbf{n}_{m2}^3) = \frac{3}{8} n_{m2}^3$ and $\mathbf{v}_2 \cdot \mathbf{n}_{m2} \cdot \mathbf{v}_2 = v_2^2 n_{m2}$.
 
 ---
 
@@ -250,14 +232,14 @@ $$\alpha_{\text{opt}} = -\frac{\int \Delta \rho_{\text{in}}(z) \Delta \rho_{\tex
 
 ---
 
-### 6.2 ClickOps Lab 6: Single-Stepping the Picard Solver & Residual Decay
+### 6.2 Follow-Along Lab 6: Single-Stepping the Picard Solver & Residual Decay
 
 #### 🎮 Interactive Simulator Setup:
 1. Set **Bulk Packing Fraction ($\eta$)** slider to `0.4500`.
 2. Click **`Reset`** to initialize the step profile.
 3. Click **`Show R(k) History`** on the lower right diagnostic button to show the log residual plot.
 
-#### 🔍 ClickOps Inspection & Discovery:
+#### 🔍 Interactive Inspection & Discovery:
 - **Click Step 1 Iter**: Click the **`Step 1 Iter`** button repeatedly (5 to 10 times).
 - **Observe Monotonic Residual Decay**: Watch the log residual curve $\log_{10} R(k)$ drop on the lower plot from $10^{-1}$ down to $10^{-6}$.
 - **Inspect Sidebar Alpha Opt**: Watch **Alpha Opt (alpha)** on the sidebar dynamically adjust per iteration ($\alpha \approx 0.03 \to 0.08$) to maximize convergence speed while preventing density over-packing ($n_3 < 1.0$).
@@ -306,28 +288,28 @@ For $\vert z\vert \le R$, $u$ ranges from $\vert z\vert$ to $\infty$.
 $w_2(z) = 2\pi \int_{\vert z\vert}^\infty \delta(R - u) u du = 2\pi R$. For $\vert z\vert > R$, the delta function root lies outside the integration range, so $w_2(z) = 0$. $\blacksquare$
 
 ### Solution to Problem 1.2 (Bulk Weighted Densities)
-For uniform $\rho(z) = \rho_{\text{bulk}}$:
+For uniform $\rho(z) = \rho_{\text{bulk}}$ with sphere radius $R$ and diameter $\sigma = 2R$:
 - $n_3^{\text{bulk}} = \rho_{\text{bulk}} v_{\text{sphere}} = \frac{4}{3}\pi R^3 \rho_{\text{bulk}} = \eta$
-- $n_2^{\text{bulk}} = \rho_{\text{bulk}} s_{\text{sphere}} = 4\pi R^2 \rho_{\text{bulk}} = \frac{6\eta}{R} = \frac{12\eta}{\sigma}$
-- $n_1^{\text{bulk}} = \frac{n_2^{\text{bulk}}}{4\pi R} = R \rho_{\text{bulk}} = \frac{3\eta}{\pi \sigma^2}$
-- $n_0^{\text{bulk}} = \frac{n_2^{\text{bulk}}}{4\pi R^2} = \rho_{\text{bulk}} = \frac{6\eta}{\pi \sigma^3}$
+- $n_2^{\text{bulk}} = \rho_{\text{bulk}} s_{\text{sphere}} = 4\pi R^2 \rho_{\text{bulk}} = \frac{3\eta}{R} = \frac{6\eta}{\sigma}$
+- $n_1^{\text{bulk}} = \frac{n_2^{\text{bulk}}}{4\pi R} = R \rho_{\text{bulk}} = \frac{3\eta}{4\pi R^2} = \frac{3\eta}{\pi \sigma^2}$
+- $n_0^{\text{bulk}} = \frac{n_2^{\text{bulk}}}{4\pi R^2} = \rho_{\text{bulk}} = \frac{3\eta}{4\pi R^3} = \frac{6\eta}{\pi \sigma^3}$
 - $v_1^{\text{bulk}} = v_2^{\text{bulk}} = 0$ (due to spherical symmetry in bulk). $\blacksquare$
 
 ### Solution to Problem 2.1 (Bulk PY Pressure Derivation)
 In bulk fluid, $\mathbf{n}_1 = \mathbf{n}_2 = 0$. Substituting $n_0, n_1, n_2, n_3$ as functions of $\eta$:  
-$\Phi_{\text{bulk}}^{\text{RF}} = -\frac{6\eta}{\pi\sigma^3} \ln(1-\eta) + \frac{18\eta^2}{\pi\sigma^3 (1-\eta)} + \frac{9\eta^3}{\pi\sigma^3 (1-\eta)^2}$.  
-Differentiating $\beta P = \eta \frac{\partial \Phi}{\partial \eta} - \Phi$ yields:  
-$\beta P_{\text{PY}} = \rho_{\text{bulk}} \frac{1 + \eta + \eta^2}{(1 - \eta)^3}$. $\blacksquare$
+$\Phi_{\text{bulk}}^{\text{RF}} = -n_0 \ln(1-n_3) + \frac{n_1 n_2}{1-n_3} + \frac{n_2^3}{24\pi (1-n_3)^2} = \rho_{\text{bulk}} \left[ -\ln(1-\eta) + \frac{3\eta}{1-\eta} + \frac{3\eta^2}{2(1-\eta)^2} \right]$.  
+Evaluating $\beta P = \eta \frac{\partial \Phi}{\partial \eta}$ for the excess pressure and adding ideal gas pressure $\rho_{\text{bulk}}$ yields:  
+$$\beta P_{\text{PY,comp}} = \rho_{\text{bulk}} \frac{1 + \eta + \eta^2}{(1 - \eta)^3}. \quad \blacksquare$$
 
-### Solution to Problem 2.2 (Bulk Excess Chemical Potential Derivation)
-In bulk fluid, evaluating the four partial derivatives of $\Phi_{\text{bulk}}^{\text{RF}}$:
+### Solution to Problem 2.2 (Bulk Excess Chemical Potential)
+Evaluating the partial derivatives of $\Phi^{\text{RF}}$ in uniform bulk fluid:
 - $\frac{\partial \Phi}{\partial n_0} = -\ln(1-\eta)$
-- $R \frac{\partial \Phi}{\partial n_1} = \frac{3\eta}{1-\eta}$
-- $s \frac{\partial \Phi}{\partial n_2} = \frac{3\eta}{1-\eta} + \frac{9\eta^2}{2(1-\eta)^2}$
-- $v \frac{\partial \Phi}{\partial n_3} = \frac{\eta}{1-\eta} + \frac{3\eta^2}{(1-\eta)^2} + \frac{3\eta^3}{(1-\eta)^3}$
+- $\frac{\partial \Phi}{\partial n_1} = \frac{n_2}{1-\eta} = \frac{3\eta}{R(1-\eta)}$
+- $\frac{\partial \Phi}{\partial n_2} = \frac{n_1}{1-\eta} + \frac{n_2^2}{8\pi (1-\eta)^2} = \frac{3\eta}{4\pi R^2 (1-\eta)} + \frac{9\eta^2}{8\pi R^2 (1-\eta)^2}$
+- $\frac{\partial \Phi}{\partial n_3} = \frac{n_0}{1-\eta} + \frac{n_1 n_2}{(1-\eta)^2} + \frac{n_2^3}{12\pi (1-\eta)^3} = \frac{3\eta}{4\pi R^3 (1-\eta)} + \frac{9\eta^2}{4\pi R^3 (1-\eta)^2} + \frac{9\eta^3}{2\pi R^3 (1-\eta)^3}$
 
-Summing these four terms yields:  
-$$\beta \mu_{\text{ex}}^{\text{PY}} = -\ln(1-\eta) + \frac{7\eta}{1-\eta} + \frac{15\eta^2}{2(1-\eta)^2} + \frac{3\eta^3}{(1-\eta)^3} = -\ln(1-\eta) + \frac{\eta(14 - 13\eta + 5\eta^2)}{2(1-\eta)^3}. \quad \blacksquare$$
+Multiplying each partial derivative by its respective weight integral ($\int w_0 dz = 1, \int w_1 dz = R, \int w_2 dz = 4\pi R^2, \int w_3 dz = \frac{4}{3}\pi R^3$) and summing:  
+$$\beta \mu_{\text{ex}}^{\text{PY}} = -\ln(1-\eta) + \frac{7\eta}{1-\eta} + \frac{15\eta^2}{2(1-\eta)^2} + \frac{3\eta^3}{(1-\eta)^3}. \quad \blacksquare$$
 
 ### Solution to Problem 3.1 (Low-Density Series Derivation)
 Using L'Hôpital's rule on $f_4^{\text{WB}}(n_3) = \frac{N(n_3)}{D(n_3)}$:  
