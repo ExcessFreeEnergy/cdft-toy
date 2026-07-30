@@ -35,6 +35,8 @@ class RaylibCDFTApp:
         self.iteration = 0
         self.residual = 0.0
         self.alpha_used = 0.03
+        self.residual_history: list[float] = []
+        self.diag_view_mode = 0  # 0: Direct Correlation c1(z), 1: Residual History R(k)
 
         # Instantiate functional engine from current selection
         fmt_name = self.fmt_names[self.fmt_idx] if self.fmt_idx < len(self.fmt_names) else "RF"
@@ -183,11 +185,8 @@ class RaylibCDFTApp:
 
         return None
 
-    def run_solver_step(self) -> None:
-        """Execute a single adaptive Roth Picard solver step and update all physical quantities."""
-        if not self.is_solving:
-            return
-
+    def execute_single_step(self) -> None:
+        """Execute exactly one adaptive Roth Picard solver step for single-step debugging."""
         self.iteration += 1
         rho_next, rho_target_cur, self.c1, self.residual, self.alpha_used = self.solver.solve_step_adaptive(
             self.rho, self.rho_prev, self.rho_target_prev
@@ -196,6 +195,7 @@ class RaylibCDFTApp:
         self.rho_prev = self.rho.copy()
         self.rho_target_prev = rho_target_cur.copy()
         self.rho = rho_next
+        self.residual_history.append(float(self.residual))
 
         # Recompute spatial weighted densities and free energy density
         self.wd = self.calc.compute(self.rho)
@@ -205,6 +205,13 @@ class RaylibCDFTApp:
 
         if self.residual < 1e-6 or self.iteration >= 2000:
             self.is_solving = False
+
+    def run_solver_step(self) -> None:
+        """Execute a single adaptive Roth Picard solver step and update all physical quantities."""
+        if not self.is_solving:
+            return
+
+        self.execute_single_step()
 
     def render_sidebar(self) -> None:
         """Render controls, sliders, radio buttons, and diagnostic metrics panel."""
@@ -268,7 +275,7 @@ class RaylibCDFTApp:
             35,
             "Domain Length (Lz)",
             self.Lz,
-            2.0,
+            0.10,
             15.0,
             fmt="{:.2f} sigma",
         )
@@ -347,15 +354,26 @@ class RaylibCDFTApp:
             self.fmt_idx = new_fmt
             self.rebuild_system()
 
-        # 5. Action Buttons
-        btn_w = 150.0
+        # 5. Action Buttons (3-column layout)
+        btn_w3 = 98.0
         btn_h = 28.0
 
-        solve_label = "Pause Solver" if self.is_solving else "Solve (Roth Picard)"
-        if UIWidgets.button(25, curr_y, btn_w, btn_h, solve_label, bg_color=Theme.PRIMARY_BLUE):
+        solve_label = "Pause" if self.is_solving else "Solve"
+        if UIWidgets.button(25, curr_y, btn_w3, btn_h, solve_label, bg_color=Theme.PRIMARY_BLUE):
             self.is_solving = not self.is_solving
 
-        if UIWidgets.button(185, curr_y, btn_w, btn_h, "Reset Profile", bg_color=Theme.SLIDER_BG):
+        if UIWidgets.button(
+            131,
+            curr_y,
+            btn_w3,
+            btn_h,
+            "Step 1 Iter",
+            bg_color=Theme.HEADER_BG,
+            tooltip="Advance Picard solver by exactly 1 iteration",
+        ):
+            self.execute_single_step()
+
+        if UIWidgets.button(237, curr_y, btn_w3, btn_h, "Reset", bg_color=Theme.SLIDER_BG):
             self.rebuild_system()
 
         curr_y += 32.0
@@ -365,13 +383,29 @@ class RaylibCDFTApp:
         if UIWidgets.button(
             25,
             curr_y,
-            310,
+            150.0,
             btn_h,
             bm_label,
             bg_color=Theme.HEADER_BG,
             tooltip=bm_tooltip,
         ):
             self.show_benchmark = not self.show_benchmark
+
+        diag_label = "Show R(k) History" if self.diag_view_mode == 0 else "Show c^(1)(z)"
+        if UIWidgets.button(
+            185.0,
+            curr_y,
+            150.0,
+            btn_h,
+            diag_label,
+            bg_color=Theme.HEADER_BG,
+            tooltip="Toggle lower diagnostic plot between c1(z) profile and residual convergence history R(k)",
+        ):
+            self.diag_view_mode = 1 - self.diag_view_mode
+            if self.diag_view_mode == 0:
+                self.plotter_diag.title = "Diagnostic Metrics & Direct Correlation c^(1)(z)"
+            else:
+                self.plotter_diag.title = "Solver Residual Convergence History log10 R(k)"
 
         curr_y += 34.0
 
@@ -581,18 +615,44 @@ class RaylibCDFTApp:
                     benchmark_points=None,
                 )
 
-            # Render diagnostic plot (c1(z) direct correlation function)
-            self.plotter_diag.render(
-                z_arr=self.grid.z,
-                y_arr=self.c1,
-                z_min=0.0,
-                z_max=self.Lz,
-                y_min=min(0.0, float(np.min(self.c1))) - 0.5,
-                y_max=max(1.0, float(np.max(self.c1))) + 0.5,
-                x_label="z / sigma",
-                y_label="c^(1)(z)",
-                primary_label="c^(1)(z) Direct Correlation",
-            )
+            # Render diagnostic plot (c1(z) direct correlation or residual history log10 R(k))
+            if self.diag_view_mode == 0:
+                self.plotter_diag.render(
+                    z_arr=self.grid.z,
+                    y_arr=self.c1,
+                    z_min=0.0,
+                    z_max=self.Lz,
+                    y_min=min(0.0, float(np.min(self.c1))) - 0.5,
+                    y_max=max(1.0, float(np.max(self.c1))) + 0.5,
+                    x_label="z / sigma",
+                    y_label="c^(1)(z)",
+                    primary_label="c^(1)(z) Direct Correlation",
+                )
+            else:
+                if self.residual_history:
+                    k_arr = np.arange(1, len(self.residual_history) + 1, dtype=float)
+                    log_res = np.log10(np.clip(self.residual_history, 1e-12, 1.0))
+                    k_max = max(10.0, float(len(self.residual_history)))
+                    y_min_log = min(-6.0, float(np.min(log_res)) - 0.5)
+                    y_max_log = max(0.0, float(np.max(log_res)) + 0.5)
+                else:
+                    k_arr = np.array([1.0])
+                    log_res = np.array([0.0])
+                    k_max = 10.0
+                    y_min_log = -6.0
+                    y_max_log = 0.0
+
+                self.plotter_diag.render(
+                    z_arr=k_arr,
+                    y_arr=log_res,
+                    z_min=1.0,
+                    z_max=k_max,
+                    y_min=y_min_log,
+                    y_max=y_max_log,
+                    x_label="Iteration Step (k)",
+                    y_label="log10 Residual R(k)",
+                    primary_label="log10 Residual R(k)",
+                )
 
             pr.end_drawing()
 

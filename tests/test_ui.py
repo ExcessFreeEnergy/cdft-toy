@@ -1,7 +1,8 @@
-"""Unit tests for UI plotter coordinate mapping and widget helper logic (Step 11)."""
+"""Unit tests for UI plotter coordinate mapping, widget helper logic, and application state (Step 11)."""
 
 import pytest
 
+from app_raylib import RaylibCDFTApp
 from src.ui.plotter import Plotter2D
 from src.ui.theme import Theme
 
@@ -31,3 +32,28 @@ def test_theme_color_palette():
     assert Theme.BG_DARK.r == 16
     assert Theme.PANEL_BG.g == 32
     assert Theme.PRIMARY_BLUE.b == 255
+
+
+def test_app_single_step_execution():
+    """Verify RaylibCDFTApp single-step execution and residual history tracking."""
+    app = RaylibCDFTApp(width=1280, height=720)
+    assert app.iteration == 0
+    assert len(app.residual_history) == 0
+
+    app.execute_single_step()
+    assert app.iteration == 1
+    assert len(app.residual_history) == 1
+    assert app.residual > 0.0
+
+    app.execute_single_step()
+    assert app.iteration == 2
+    assert len(app.residual_history) == 2
+
+
+def test_app_diag_view_mode_toggle():
+    """Verify diagnostic view mode toggle state handling."""
+    app = RaylibCDFTApp(width=1280, height=720)
+    assert app.diag_view_mode == 0
+
+    app.diag_view_mode = 1
+    assert app.diag_view_mode == 1
