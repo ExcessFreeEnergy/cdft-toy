@@ -43,7 +43,7 @@ This software project is built as a complete mathematical implementation of Rola
 
 ## 🎓 Interactive Masterclass Companion (`tutorial.md`)
 
-The repository includes a comprehensive, self-contained textbook and laboratory companion guide in **[tutorial.md](file:///home/gauss/code/cdft/tutorial.md)**.
+The repository includes a comprehensive, self-contained textbook and laboratory companion guide in **[tutorial.md](tutorial.md)**.
 
 ### Masterclass Structure:
 - **Module 1**: Geometry & Fundamentals of FMT (Weight Integrals & Parity).
