@@ -43,7 +43,7 @@ This software project is built as a complete mathematical implementation of Rola
 
 ## 🎓 Interactive Masterclass Companion (`tutorial.md`)
 
-The repository includes a self-contained textbook and **Interactive Laboratory Companion** in **[tutorial.md](tutorial.md)** designed to be read side-by-side with Roland Roth's review paper (`review/review.md`).
+The repository includes a self-contained textbook and **Interactive Laboratory Companion** in **[tutorial.md](tutorial.md)** designed to be read side-by-side with Roland Roth's topical review (*J. Phys.: Condens. Matter 22, 2010, 063102*).
 
 ### Section-by-Section Follow-Along Labs:
 - **Module 1 (Roth 2010 Sec. 1 & 3)**: Hard-Sphere Geometry & 1D Planar Weight Convolutions ($n_3, n_2, v_2$ vector flux discovery in simulator).

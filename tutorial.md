@@ -7,10 +7,10 @@ An Interactive Simulation & Laboratory Companion Aligned Section-by-Section with
 
 ## 📖 How to Use This Masterclass & Lab Companion
 
-This guide is designed as a **hands-on laboratory manual and follow-along companion** to be read side-by-side with Roland Roth's review paper (`review/review.md`).
+This guide is designed as a **hands-on laboratory manual and follow-along companion** to be read side-by-side with Roland Roth's review paper (*J. Phys.: Condens. Matter 22, 2010, 063102*).
 
 ### Recommended Workflow
-1. **Open `review/review.md`** on one side of your screen.
+1. **Open Roland Roth's review paper** on one side of your screen.
 2. **Launch the Raylib Desktop Simulator** on the other side:
    ```bash
    uv run python app_raylib.py
