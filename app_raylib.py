@@ -142,8 +142,8 @@ class RaylibCDFTApp:
         )
 
         w_max = max(0.60, min(self.Lz, 2.5))
-        self.crossover_pore_widths = np.linspace(0.30, w_max, 6)
-        self.crossover_pore_results = CrossoverAnalyzer.sweep_pore_confinement(
+        self.crossover_pore_widths = np.linspace(0.30, w_max, 8)
+        self.crossover_pore_results = CrossoverAnalyzer.sweep_pore_confinement_direct(
             self.crossover_pore_widths.tolist(), eta_bulk=self.eta, functionals=self.fmt_names, dz=max(0.008, self.dz)
         )
         self.crossover_data_dirty = False
@@ -650,9 +650,7 @@ class RaylibCDFTApp:
                     )
                 else:
                     # Slit Pore: Pore Confinement Sweep vs Pore Width Lz
-                    pore_phi = {
-                        f_name: np.array([m.max_phi for m in self.crossover_pore_results[f_name]]) for f_name in self.fmt_names
-                    }
+                    pore_phi = {f_name: np.array(self.crossover_pore_results[f_name]) for f_name in self.fmt_names}
                     primary_y = pore_phi[active_fmt]
                     sec_curves = []
                     for f_name in self.fmt_names:

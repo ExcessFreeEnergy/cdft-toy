@@ -127,6 +127,45 @@ class CrossoverAnalyzer:
         return res
 
     @staticmethod
+    def sweep_pore_confinement_direct(
+        widths: list[float],
+        eta_bulk: float = 0.35,
+        functionals: list[str] | None = None,
+        dz: float = 0.008,
+    ) -> dict[str, list[float]]:
+        """Evaluate peak free energy density max Phi(z) directly across slit-pore widths without iterative solver overhead.
+
+        Args:
+            widths: List of slit-pore widths Lz.
+            eta_bulk: Bulk packing fraction.
+            functionals: List of functional names.
+            dz: Spatial resolution.
+
+        Returns:
+            Dictionary mapping functional name to list of max Phi(z) values.
+        """
+        if functionals is None:
+            functionals = ["RF", "WB", "WBII", "WB-Tensor"]
+
+        results: dict[str, list[float]] = {f_name: [] for f_name in functionals}
+        params = PhysicalParameters(eta=eta_bulk)
+
+        for w in widths:
+            grid = Grid1D(params=params, Lz=w, dz=dz)
+            calc = WeightedDensityCalculator(grid, apply_endpoint_modification=True)
+            v_ext = grid.external_potential(wall_left=0.0, wall_right=w)
+            rho = params.rho_bulk * np.exp(-np.clip(v_ext, -700.0, 700.0))
+            wd = calc.compute(rho)
+
+            for f_name in functionals:
+                func = functional_factory(f_name)
+                phi = func.evaluate_phi(wd)
+                max_phi = float(np.max(np.nan_to_num(phi, nan=1e10, posinf=1e10)))
+                results[f_name].append(max_phi)
+
+        return results
+
+    @staticmethod
     def sweep_pore_confinement(
         widths: list[float],
         eta_bulk: float = 0.35,
